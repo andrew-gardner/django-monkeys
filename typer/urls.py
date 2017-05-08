@@ -1,9 +1,9 @@
 from django.conf.urls import url
 
-from . import views
+from .views import IndexView
 
 app_name = 'typer'
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^(?P<dieImage_id>[0-9]+)/$', views.detail, name='detail'),
+    #url(r'^$', views.index, name='index'),
+    url(r'^(?P<dieName>[a-zA-Z]+)/$', IndexView, name='index'),
 ]

@@ -35,5 +35,5 @@ class TypedDie(models.Model):
     submitDate = models.DateTimeField('Time Submitted', null=True, blank=True)
 
     def __str__(self):
-        completed = (self.typedField is not None)
+        completed = (self.typedField is not None and self.typedField != "")
         return ('TypedDie %d for dieImage %d from die %s (%r)' % (self.id, self.dieImage.id, self.dieImage.die.name, completed))

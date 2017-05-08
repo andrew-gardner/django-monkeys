@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Typing {{die.name}}{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <h2>You're looking at die image {{dieImage.id}} and entry field {{typedDie.id}}</h2><br>
+    {% if typedTextMissingError %} <br>Error: Please enter something before submitting.<br>  {% endif %}
+    <p style="float: left;"><img src="{{dieImage.image.url}}"></p>
+    <form action="" method="post">
+    {% csrf_token %}
+      <p>{{form.typedField}}</p><br>
+      <input type="hidden" name="dieField" value="{{typedDie.id}}" />
+      <input type="submit" value="Done" />
+    </form>
+  {% else %}
+    <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before the typing can begin.</h2>
+  {% endif %}
+{% endblock %}

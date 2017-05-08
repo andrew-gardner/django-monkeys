@@ -2,12 +2,13 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>{% block title %}Monkeys galore{% endblock %}</title>
+  <title>{% block title %}Monkeys!{% endblock %}</title>
 </head>
 <body>
   <header>
     {% if user.is_authenticated %}
       {{ user.username }} :
+      <a href="{% url 'home' %}">home</a>
       <a href="{% url 'logout' %}">logout</a>
     {% else %}
       <a href="{% url 'login' %}">login</a>

@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'registration'
+    'registration',
+    'typer.apps.TyperConfig'
 ]
 
 MIDDLEWARE = [
@@ -124,4 +125,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-LOGIN_REDIRECT_URL = 'home'
+# TODO: Can I un-hardcode this?
+LOGIN_REDIRECT_URL = '/typer/'

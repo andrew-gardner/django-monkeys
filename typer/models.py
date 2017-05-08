@@ -1,14 +1,18 @@
 from django.db import models
 
+
+# TODO: Add a Die database entry to group all dieImages
+# class Die(models.Model)
+
+
 class DieImage(models.Model):
-    chipName = models.CharField('Chip Name', max_length=256)
-    dieImageNum = models.IntegerField('Die Image Number')
+    chipName = models.CharField('Chip Name', max_length=256)    # TODO: ForeignKey back to the chip database entry
     cropRow = models.IntegerField('Cropped Row')
     cropCol = models.IntegerField('Cropped Column')
     dieImage = models.ImageField('Die Image')
 
     def __str__(self):
-        return ("%s_%d_%d_%d" % (self.chipName, self.dieImageNum, self.cropCol, self.cropRow))
+        return ("%04d_%s_%d_%d" % (self.id, self.chipName, self.cropCol, self.cropRow))
 
 
 class TypedDie(models.Model):
@@ -16,4 +20,4 @@ class TypedDie(models.Model):
     typedField = models.TextField('Typed Info')
 
     def __str__(self):
-        return ('TypedDie for dieImage %d' % dieImage.id)
+        return ('TypedDie %d for dieImage %d' % (self.id, self.dieImage.id))

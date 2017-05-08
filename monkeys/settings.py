@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -86,7 +85,8 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS = []
+# VALIDATORS turned off because monkeys don't care
 #    {
 #        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
 #    },
@@ -99,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 #    {
 #        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
 #    },
-]
+#]
 
 
 # Internationalization
@@ -125,8 +125,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# TODO: Can I un-hardcode this?
-LOGIN_REDIRECT_URL = '/typer/'
+# TODO: If I want to point at an app, can I do it without hard-coding the app path?
+LOGIN_REDIRECT_URL = '/'
 
 
 # This seems to be a replacement for static

@@ -1,9 +1,6 @@
-import os
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from .models import DieImage, TypedDie
-
-from django.conf import settings
 
 
 def index(request):
@@ -14,4 +11,19 @@ def detail(request, dieImage_id):
     """
     """
     di = get_object_or_404(DieImage, id=dieImage_id)
-    return HttpResponse("""You're looking at die image %s.<br><br><img src="%s" /><br>""" % (dieImage_id, di.dieImage.url))
+
+    typedDie = None
+    for td in di.typeddie_set.all():
+        if td.typedField == "":
+            typedDie = td
+            break
+
+    if not typedDie:
+        return HttpResponse("There are no more fields to fill for this die")
+
+    context = {
+                  'dieImage_id': dieImage_id,
+                  'dieImage_url': di.dieImage.url,
+                  'typedDie': typedDie
+              }
+    return render(request, 'typer/detail.html', context)

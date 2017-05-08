@@ -9,6 +9,7 @@ from django.views.generic.base import TemplateView
 from . import forms as local_forms
 from registration.backends.simple.views import RegistrationView
 
+
 urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='home.html'), name='home'),
     url(r'^typer/', include('typer.urls'), name='typer'),

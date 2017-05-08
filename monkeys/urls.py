@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib import admin
+from django.views.static import serve
 from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
 from django.views.generic.base import TemplateView
@@ -14,4 +16,5 @@ urlpatterns = [
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, {'template_name': 'logged_out.html'}, name='logout'),
     url(r'^accounts/', RegistrationView.as_view(form_class=local_forms.EmailFreeRegistrationForm), name='register'),
+    url(r'^media/(.*)$', serve, {'document_root' : settings.MEDIA_ROOT}),
 ]

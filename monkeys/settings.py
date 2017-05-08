@@ -127,3 +127,8 @@ STATICFILES_DIRS = [
 
 # TODO: Can I un-hardcode this?
 LOGIN_REDIRECT_URL = '/typer/'
+
+
+# This seems to be a replacement for static
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

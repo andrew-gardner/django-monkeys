@@ -1,5 +1,9 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+import os
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, render
+from .models import DieImage, TypedDie
+
+from django.conf import settings
 
 
 def index(request):
@@ -7,4 +11,7 @@ def index(request):
 
 
 def detail(request, dieImage_id):
-    return HttpResponse("You're looking at die image %s." % dieImage_id)
+    """
+    """
+    di = get_object_or_404(DieImage, id=dieImage_id)
+    return HttpResponse("""You're looking at die image %s.<br><br><img src="%s" /><br>""" % (dieImage_id, di.dieImage.url))

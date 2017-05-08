@@ -31,9 +31,9 @@ class TypedDie(models.Model):
     """
     dieImage = models.ForeignKey(DieImage, on_delete=models.CASCADE)
     submitter = models.ForeignKey('auth.User', null=True, blank=True)
-    typedField = models.TextField('Typed Info', null=True, blank=True)
+    typedField = models.TextField('Typed Info', blank=True)
     submitDate = models.DateTimeField('Time Submitted', null=True, blank=True)
 
     def __str__(self):
-        completed = (self.typedField is not None and self.typedField != "")
+        completed = (self.typedField != "")
         return ('TypedDie %d for dieImage %d from die %s (%r)' % (self.id, self.dieImage.id, self.dieImage.die.name, completed))

@@ -16,7 +16,7 @@ def IndexView(request, dieName):
 
     if request.method != "POST":
         dieObject = Die.objects.filter(name=dieName)[0]
-        allAvailableFields = TypedDie.objects.filter(Q(typedField="") | Q(typedField=None) & Q(dieImage__die=dieObject))
+        allAvailableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject))
         if len(allAvailableFields) == 0:
             return HttpResponse("All fields have been typed for this die")
         randomField = random.randint(0, len(allAvailableFields)-1)

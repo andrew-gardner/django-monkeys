@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Summary for {{die.name}}{% endblock %}
+
+{% block content %}
+  {% if user.is_superuser %}
+    <h2>These are the results for die image {{dieImage.id}} for {{die.name}}</h2><br>
+    <table border=1><tr>
+    <td><img src="{{dieImage.image.url}}"></td>
+    {% for tda in typedDieArray %}
+      <form action="" method="get">
+        <td valign="top"><code>{{ tda.typedField }}</code></td>
+      </form>
+    {% endfor %}
+    </tr></table>
+  {% else %}
+    <h2>You must be a super user to see this submission summary page.</h2>
+  {% endif %}
+{% endblock %}

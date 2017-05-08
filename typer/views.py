@@ -8,12 +8,11 @@ from .models import Die, DieImage, TypedDie
 from .forms import MonkeyTyperForm
 
 
-def IndexView(request, dieName):
+def indexView(request, dieName):
     """
     Given a particular die, get a list of all its
     DieImages, and choose one of those to present
     """
-
     if request.method != "POST":
         dieObject = Die.objects.filter(name=dieName)[0]
         allAvailableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject))
@@ -49,6 +48,25 @@ def IndexView(request, dieName):
             # Redisplay the same page but with an error message
             return imageInput(request, dieField.id, True)
 
+
+def summaryView(request, dieName, imageId):
+    """
+    """
+    dieObject = Die.objects.filter(name=dieName)[0]
+    dieImage = DieImage.objects.filter(id=imageId)[0]
+    allAvailableFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=imageId))
+
+    populatedForms = list()
+    for aaf in allAvailableFields:
+        populatedForms.append(MonkeyTyperForm(initial={'typedField': aaf.typedField}))
+
+    context = {
+                  'die': dieObject,
+                  'dieImage': dieImage,
+                  'typedDieArray': populatedForms
+              }
+
+    return render(request, 'typer/summaryView.html', context)
 
 
 def imageInput(request, fieldId, typedTextMissingError=False):

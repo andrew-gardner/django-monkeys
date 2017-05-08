@@ -5,8 +5,12 @@
 {% block content %}
   {% if user.is_authenticated %}
     <h2>You're looking at die image {{dieImage_id}} and entry field {{typedDie.id}}</h2><br>
-    <img src="{{dieImage_url}}"><br>
-    <input type="text" name="input" id="{{ typedDie }}" />
+    <p style="float: left;"><img src="{{dieImage_url}}"></p>
+    <form action="" method="post">
+    {% csrf_token %}
+      <p>{{form.typedField}}</p><br>
+      <input type="submit" value="Done" />
+    </form>
   {% else %}
     <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before the typing can begin.</h2>
   {% endif %}

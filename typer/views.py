@@ -14,34 +14,52 @@ def indexView(request, dieName):
     Given a particular die, get a list of all its
     DieImages, and choose one of those to present
     """
+    userIsStaff = request.user.is_staff
+
     if request.method != "POST":
+        # Standard page display (no POST)
         dieObject = Die.objects.filter(name=dieName)[0]
         allAvailableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject))
+
+        # Filter so that the same user never sees the same image twice eg. Q(user != self)
+        if not userIsStaff:
+            thingsUserHasTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=request.user))
+            for tuht in thingsUserHasTyped:
+                allAvailableFields = allAvailableFields.exclude(Q(dieImage=tuht.dieImage))
+
+        # A simple message for users who have typed all there is to type
+        # TODO: Make this more interesting
         if len(allAvailableFields) == 0:
             return HttpResponse("All fields have been typed for this die")
+
+        # Choose a random field to display
         randomField = random.randint(0, len(allAvailableFields)-1)
         randomId = allAvailableFields[randomField].id
 
-        # TODO: Mutex lock
+        # TODO: Mutex lock - maybe not needed
         return imageInput(request, randomId)
 
     else:
+        # Data has been POSTed
         # TODO: They say getting the data out of the request is bad form - fix
         form = MonkeyTyperForm(request.POST)
         typedText = request.POST['typedField']
 
         # Pull the previous die field out of the form's hidden data
-        dieField = TypedDie.objects.filter(id=request.POST['dieField'])[0]
+        dieId = int(request.POST['dieField'])
+        dieField = TypedDie.objects.filter(id=dieId)[0]
 
         # Good text in a POST?  Validate and save
         if typedText != "":
             if form.is_valid():
+                # TODO : Check if someone else has saved while you were working on this image
+                #        If so, find another TypedDie that shares the same image to save to.
                 dieField.submitter = request.user
                 dieField.submitDate = timezone.now()
                 dieField.typedField = typedText
                 dieField.save()
 
-                # TODO: Unlock the mutex
+                # TODO: Unlock the mutex - maybe not needed
 
                 # Return the next random page
                 return HttpResponseRedirect('/typer/' + dieName)
@@ -75,12 +93,10 @@ def summaryHomeView(request, dieName):
     """
     dieObject = Die.objects.filter(name=dieName)[0]
     allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
-
     context = {
                   'die': dieObject,
                   'dieImages': allAvailableDieImages,
               }
-
     return render(request, 'typer/summaryHome.html', context)
 
 
@@ -107,6 +123,7 @@ def summaryView(request, dieName, imageId):
         workingField.save()
         allAvailableFields[clearNumber].refresh_from_db()
 
+    # Build the arrays that we want to display
     submitterArray = list()
     populatedForms = list()
     submitTimeArray = list()

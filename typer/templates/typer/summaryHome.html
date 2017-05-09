@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Summary for {{die.name}}{% endblock %}
+
+{% block content %}
+  {% if user.is_superuser %}
+    <h2>Hello administrator - these are the images available for {{die.name}}</h2><br>
+    {% for di in dieImages %}
+      <a href="{% url 'typer:summaryView' die.name di.id %}">{{di.id}}</a><br />
+    {% endfor %}
+  {% else %}
+    <h2>You must be a super user to see this submission summary page.</h2>
+  {% endif %}
+{% endblock %}

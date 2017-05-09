@@ -1,3 +1,4 @@
+import re
 import random
 
 from django.db.models import Q
@@ -40,7 +41,7 @@ def indexView(request, dieName):
                 dieField.typedField = typedText
                 dieField.save()
 
-                # Unlock the mutex
+                # TODO: Unlock the mutex
 
                 # Return the next random page
                 return HttpResponseRedirect('/typer/' + dieName)
@@ -49,28 +50,9 @@ def indexView(request, dieName):
             return imageInput(request, dieField.id, True)
 
 
-def summaryView(request, dieName, imageId):
-    """
-    """
-    dieObject = Die.objects.filter(name=dieName)[0]
-    dieImage = DieImage.objects.filter(id=imageId)[0]
-    allAvailableFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=imageId))
-
-    populatedForms = list()
-    for aaf in allAvailableFields:
-        populatedForms.append(MonkeyTyperForm(initial={'typedField': aaf.typedField}))
-
-    context = {
-                  'die': dieObject,
-                  'dieImage': dieImage,
-                  'typedDieArray': populatedForms
-              }
-
-    return render(request, 'typer/summaryView.html', context)
-
-
 def imageInput(request, fieldId, typedTextMissingError=False):
     """
+    Helper function for the indexView.
     """
     # Recover the requested die image and its corresponding die
     dieField = get_object_or_404(TypedDie, id=fieldId)
@@ -86,3 +68,61 @@ def imageInput(request, fieldId, typedTextMissingError=False):
                   'typedTextMissingError' : typedTextMissingError
               }
     return render(request, 'typer/imageInput.html', context)
+
+
+def summaryHomeView(request, dieName):
+    """
+    """
+    dieObject = Die.objects.filter(name=dieName)[0]
+    allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
+
+    context = {
+                  'die': dieObject,
+                  'dieImages': allAvailableDieImages,
+              }
+
+    return render(request, 'typer/summaryHome.html', context)
+
+
+def summaryView(request, dieName, imageId):
+    """
+    Displays a summary of all the entered information for a given
+    Die and DieImage.
+    """
+    dieObject = Die.objects.filter(name=dieName)[0]
+    dieImage = DieImage.objects.filter(id=imageId)[0]
+    allAvailableFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=imageId))
+
+    if request.method == "POST":
+        # Pull which clear button was pressed
+        buttonPressed = [ k for k,v in request.POST.items() if k.startswith('submitButton')][0]
+        clearNumberRe = re.search(r'(\d+)$', buttonPressed)
+        clearNumber = int(clearNumberRe.group(0))
+        workingField = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=imageId))[clearNumber]
+
+        # Clear the form
+        workingField.submitter = None
+        workingField.submitDate = None
+        workingField.typedField = ""
+        workingField.save()
+        allAvailableFields[clearNumber].refresh_from_db()
+
+    submitterArray = list()
+    populatedForms = list()
+    submitTimeArray = list()
+    for aaf in allAvailableFields:
+        populatedForms.append(MonkeyTyperForm(initial={'typedField': aaf.typedField}))
+        submitterArray.append(aaf.submitter)
+        submitTimeArray.append(aaf.submitDate)
+
+    context = {
+                  'die': dieObject,
+                  'dieImage': dieImage,
+                  'typedDieArray': populatedForms,
+                  'submitterArray': submitterArray,
+                  'submitTimeArray': submitTimeArray,
+                  'submitButtonNumbers': range(len(submitTimeArray))
+              }
+
+    return render(request, 'typer/summaryView.html', context)
+

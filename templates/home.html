@@ -7,7 +7,12 @@
     <h2>Greetings {{ user.username }}!<br></h2>
     Please choose from one of the following dies to work on...<br>
     {% for die in dieList %}
-    <h3><a href="{% url 'typer:index' die %}">{{die}}</a></h3><br>
+      <h3><a href="{% url 'typer:index' die %}">{{die}}</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'typer:summaryHome' die %}">(manage)</a>
+      {% endif %}
+      </h3>
+      <br>
     {% endfor %}
   {% else %}
     <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before the typing can begin.</h2>

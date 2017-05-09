@@ -5,14 +5,35 @@
 {% block content %}
   {% if user.is_superuser %}
     <h2>These are the results for die image {{dieImage.id}} for {{die.name}}</h2><br>
-    <table border=1><tr>
+    <table cellspacing=0 border=0>
+    <tr>
     <td><img src="{{dieImage.image.url}}"></td>
     {% for tda in typedDieArray %}
-      <form action="" method="get">
-        <td valign="top"><code>{{ tda.typedField }}</code></td>
+      <td valign="top"> <code>{{ tda.typedField }}</code> </td>
+    {% endfor %}
+    </tr>
+    <tr>
+    <td></td>
+    {% for sa in submitterArray %}
+      <td valign="top"> {{ sa }} </td>
+    {% endfor %}
+    </tr>
+    <tr>
+    <td></td>
+    {% for sta in submitTimeArray %}
+      <td valign="top"> {{ sta }} </td>
+    {% endfor %}
+    </tr>
+    <tr>
+    <td></td>
+    {% for sbn in submitButtonNumbers %}
+      <form action="" method="post">
+      {% csrf_token %}
+      <td valign="top"> <input type="submit" name="submitButton{{sbn}}" value="Clear" /> </td>
       </form>
     {% endfor %}
-    </tr></table>
+    </tr>
+    </table>
   {% else %}
     <h2>You must be a super user to see this submission summary page.</h2>
   {% endif %}

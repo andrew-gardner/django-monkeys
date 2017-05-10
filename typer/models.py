@@ -39,6 +39,5 @@ class TypedDie(models.Model):
         """
         return (self.typedField != "")
 
-
     def __str__(self):
         return ('TypedDie %d for dieImage %d from die %s (%r)' % (self.id, self.dieImage.id, self.dieImage.die.name, self.completed()))

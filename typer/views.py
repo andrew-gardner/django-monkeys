@@ -1,5 +1,6 @@
 import re
 import random
+import logging
 
 from django.db.models import Q
 from django.utils import timezone
@@ -7,6 +8,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from .models import Die, DieImage, TypedDie
 from .forms import MonkeyTyperForm
+
+logger = logging.getLogger(__name__)
 
 
 def indexView(request, dieName):
@@ -21,7 +24,7 @@ def indexView(request, dieName):
         dieObject = Die.objects.filter(name=dieName)[0]
         allAvailableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject))
 
-        # Filter so that the same user never sees the same image twice eg. Q(user != self)
+        # Filter so that the same user never sees the same image twice eg. (submitter != self)
         if not userIsStaff:
             thingsUserHasTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=request.user))
             for tuht in thingsUserHasTyped:
@@ -36,7 +39,7 @@ def indexView(request, dieName):
         randomField = random.randint(0, len(allAvailableFields)-1)
         randomId = allAvailableFields[randomField].id
 
-        # TODO: Mutex lock - maybe not needed
+        # Display the random page
         return imageInput(request, randomId)
 
     else:
@@ -52,14 +55,34 @@ def indexView(request, dieName):
         # Good text in a POST?  Validate and save
         if typedText != "":
             if form.is_valid():
-                # TODO : Check if someone else has saved while you were working on this image
-                #        If so, find another TypedDie that shares the same image to save to.
+                # If someone snuck in and completed the field before you (!)
+                if dieField.completed():
+                    # TODO: Convert to django/Python logging
+                    dieObject = dieField.dieImage.die
+                    dieImageObject = dieField.dieImage
+                    print("User %s attempted to submit %s die image %s typed id %d, but someone else did first" %
+                          (request.user,
+                           dieObject,
+                           dieImageObject,
+                           dieId))
+
+                    # Find the next available dieField that is not completed
+                    availableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject) & Q(dieImage=dieImageObject))
+
+                    # If there is no place to squeeze the data in, just return the next random page
+                    if not len(availableFields):
+                        print("And there was no place free to put their work, so it got trashed")
+                        return HttpResponseRedirect('/typer/' + dieName)
+
+                    # If there is space, stuff it in the first object that's available
+                    dieField = availableFields[0]
+                    print("So we are adding it to field %s instead" % dieField)
+
+                # Submit
                 dieField.submitter = request.user
                 dieField.submitDate = timezone.now()
                 dieField.typedField = typedText
                 dieField.save()
-
-                # TODO: Unlock the mutex - maybe not needed
 
                 # Return the next random page
                 return HttpResponseRedirect('/typer/' + dieName)

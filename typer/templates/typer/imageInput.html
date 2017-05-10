@@ -4,8 +4,12 @@
 
 {% block content %}
   {% if user.is_authenticated %}
-    {% if user.is_staff %} <h2>You, the administrator, are looking at die image {{dieImage.id}} and entry field {{typedDie.id}}</h2><br> {% endif %}
-    {% if typedTextMissingError %} <br>Error: Please enter something before submitting.<br> {% endif %}
+    {% if user.is_staff %}
+      <h2>You, the administrator, are looking at die image {{dieImage.id}} and entry field {{typedDie.id}}</h2><br>
+    {% endif %}
+    {% if typedTextMissingError %}
+      <br>Error: Please enter something before submitting.<br>
+    {% endif %}
     <table cellspacing=0 border=0>
     <tr>
     <td valign="top">

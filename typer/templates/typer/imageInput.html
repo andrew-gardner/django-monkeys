@@ -4,15 +4,24 @@
 
 {% block content %}
   {% if user.is_authenticated %}
-    <h2>((DEBUG)) You're looking at die image {{dieImage.id}} and entry field {{typedDie.id}}</h2><br>
+    {% if user.is_staff %} <h2>You, the administrator, are looking at die image {{dieImage.id}} and entry field {{typedDie.id}}</h2><br> {% endif %}
     {% if typedTextMissingError %} <br>Error: Please enter something before submitting.<br> {% endif %}
-    <p style="float: left;"><img src="{{dieImage.image.url}}"></p>
+    <table cellspacing=0 border=0>
+    <tr>
+    <td valign="top">
+    <img src="{{dieImage.image.url}}">
+    </td>
     <form action="" method="post">
     {% csrf_token %}
-      <p>{{form.typedField}}</p><br>
-      <input type="hidden" name="dieField" value="{{typedDie.id}}" />
+      <td valign="top">
+      {{form.typedField}}<br>
       <input type="submit" name="submitButton" value="Submit" />
+      </td>
     </form>
+    </tr>
+    </table>
+    {# Pass some hidden information on to the POST #}
+    <input type="hidden" name="dieField" value="{{typedDie.id}}" />
   {% else %}
     <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before the typing can begin.</h2>
   {% endif %}

@@ -34,6 +34,11 @@ class TypedDie(models.Model):
     typedField = models.TextField('Typed Info', blank=True)
     submitDate = models.DateTimeField('Time Submitted', null=True, blank=True)
 
+    def completed(self):
+        """
+        """
+        return (self.typedField != "")
+
+
     def __str__(self):
-        completed = (self.typedField != "")
-        return ('TypedDie %d for dieImage %d from die %s (%r)' % (self.id, self.dieImage.id, self.dieImage.die.name, completed))
+        return ('TypedDie %d for dieImage %d from die %s (%r)' % (self.id, self.dieImage.id, self.dieImage.die.name, self.completed()))

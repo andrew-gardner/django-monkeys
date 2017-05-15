@@ -7,7 +7,9 @@
     <h2>These are the results for die image {{dieImage.id}} for {{die.name}}</h2><br>
     <table cellspacing=0 border=0>
     <tr>
-    <td valign="top"><img src="{{dieImage.image.url}}"></td>
+    <td valign="top">
+    {% load static %}
+    <img src="{% static dieImage.image.url %}"></td>
     {% for tda in typedDieArray %}
       <td valign="top"> <code>{{ tda.typedField }}</code> </td>
     {% endfor %}

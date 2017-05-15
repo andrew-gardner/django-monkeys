@@ -119,14 +119,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-#STATICFILES_DIRS = [ os.path.join(BASE_DIR, "static") ]
+
+# Switch over to static_root when deploying
+#STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATICFILES_DIRS = [ os.path.join(BASE_DIR, "static") ]
 
 
 # TODO: If I want to point at an app, can I do it without hard-coding the app path?
 LOGIN_REDIRECT_URL = '/'
-
-
-# This seems to be a replacement for static
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'

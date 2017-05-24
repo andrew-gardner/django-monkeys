@@ -22,11 +22,11 @@
       {{form.typedField}}<br>
       <input type="submit" name="submitButton" value="Submit" />
       </td>
+      {# Pass some hidden information on to the POST - must be in the form tag #}
+      <input type="hidden" name="dieField" value="{{typedDie.id}}" />
     </form>
     </tr>
     </table>
-    {# Pass some hidden information on to the POST #}
-    <input type="hidden" name="dieField" value="{{typedDie.id}}" />
   {% else %}
     <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before the typing can begin.</h2>
   {% endif %}

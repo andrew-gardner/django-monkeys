@@ -21,7 +21,7 @@ class DieImage(models.Model):
     image = models.ImageField('Die Image')
 
     def __str__(self):
-        return ("%04d_%s_%d_%d" % (self.id, self.die.name, self.cropCol, self.cropRow))
+        return ("%s_%d_%d" % (self.die.name, self.cropCol, self.cropRow))
 
 
 class TypedDie(models.Model):
@@ -40,4 +40,4 @@ class TypedDie(models.Model):
         return (self.typedField != "")
 
     def __str__(self):
-        return ('TypedDie %d for dieImage %d from die %s (%r)' % (self.id, self.dieImage.id, self.dieImage.die.name, self.completed()))
+        return ('TypedDie for DieImage "%s" (%r)' % (self.dieImage, self.completed()))

@@ -116,9 +116,19 @@ def summaryHomeView(request, dieName):
     """
     dieObject = Die.objects.filter(name=dieName)[0]
     allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
+    # Count all the entered fields for this die image (TODO: There must be a more Pythonic way to do this)
+    dieImageEntryCounts = list()
+    for di in allAvailableDieImages:
+        completedFieldCount = 0
+        typedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=di.id))
+        for tf in typedFields:
+            if tf.completed():
+                completedFieldCount += 1
+        dieImageEntryCounts.append(completedFieldCount)
+	
     context = {
                   'die': dieObject,
-                  'dieImages': allAvailableDieImages,
+                  'dieImageInfo': zip(allAvailableDieImages, dieImageEntryCounts)
               }
     return render(request, 'typer/summaryHome.html', context)
 

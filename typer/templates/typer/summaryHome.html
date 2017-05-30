@@ -5,8 +5,8 @@
 {% block content %}
   {% if user.is_superuser %}
     <h2>Hello administrator - these are the images available for {{die.name}}</h2><br>
-    {% for di in dieImages %}
-      <a href="{% url 'typer:summaryView' die.name di.id %}">{{di.id}}</a><br />
+    {% for di, cc in dieImageInfo %}
+      </a>({{cc}})&nbsp<a href="{% url 'typer:summaryView' die.name di.id %}">{{di}}<br />
     {% endfor %}
   {% else %}
     <h2>You must be a super user to see this submission summary page.</h2>

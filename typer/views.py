@@ -117,6 +117,7 @@ def summaryHomeView(request, dieName):
     dieObject = Die.objects.filter(name=dieName)[0]
     allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
     # Count all the entered fields for this die image (TODO: There must be a more Pythonic way to do this)
+    dieIsCompleted = list()
     dieImageEntryCounts = list()
     for di in allAvailableDieImages:
         completedFieldCount = 0
@@ -125,10 +126,11 @@ def summaryHomeView(request, dieName):
             if tf.completed():
                 completedFieldCount += 1
         dieImageEntryCounts.append(completedFieldCount)
-	
+        dieIsCompleted.append(completedFieldCount == len(typedFields))
+
     context = {
                   'die': dieObject,
-                  'dieImageInfo': zip(allAvailableDieImages, dieImageEntryCounts)
+                  'dieImageInfo': zip(allAvailableDieImages, dieImageEntryCounts, dieIsCompleted)
               }
     return render(request, 'typer/summaryHome.html', context)
 

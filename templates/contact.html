@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <h2>Contact us<br></h2>
+    {% if submitSuccess %}
+      <h3>Thank you for your comments!  We will review them shortly and respond to you if it makes sense.</h3>
+    {% else %}
+      Please use this form to report any problems, offer any praise, or communicate in any way with those in charge.<br /><br />
+      <table>
+      <form method="post">
+        {% csrf_token %}
+        <tr><td>{{ form.fromEmail.label }}</td><td>{{ form.fromEmail }}</td></tr>
+        <tr><td>{{ form.subject.label }}</td><td>{{ form.subject }}</td></tr>
+        <tr><td>{{ form.message.label }}</td><td>{{ form.message }}</td></tr>
+      </table>
+        <div class="form-actions">
+          <button type="submit">Send</button>
+        </div>
+      </form>
+    {% endif %}
+  {% else %}
+    <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before contacting us.</h2>
+  {% endif %}
+{% endblock %}

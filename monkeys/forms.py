@@ -8,3 +8,11 @@ class EmailFreeRegistrationForm(RegistrationForm):
     a new user.
     """
     email = forms.EmailField(required=False)
+
+
+class ContactForm(forms.Form):
+    """
+    """
+    fromEmail = forms.EmailField(required=True, label="From e-mail")
+    subject = forms.CharField(required=True, label="Subject")
+    message = forms.CharField(widget=forms.Textarea(attrs={'cols': 70, 'rows': 10}), label="Message")

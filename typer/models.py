@@ -6,6 +6,8 @@ class Die(models.Model):
     A model storing information for a die that has been imaged.
     """
     name = models.CharField(max_length=256)
+    instructions = models.TextField('Instructions', blank=True)
+    instructionsImage = models.ImageField('Instructions Image', null=True)
 
     def __str__(self):
         return ("%s" % (self.name))

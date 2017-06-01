@@ -8,8 +8,11 @@
     Please choose from one of the following dies to work on...<br>
     {% for die in dieList %}
       <h3><a href="{% url 'typer:index' die %}">{{die}}</a>
+      &nbsp--&nbsp
+      <a href="{% url 'typer:dieInstructions' die %}">instructions</a>
       {% if user.is_superuser %}
-        <a href="{% url 'typer:summaryHome' die %}">(manage)</a>
+        &nbsp--&nbsp
+        <a href="{% url 'typer:summaryHome' die %}">[[results]]</a>
       {% endif %}
       </h3>
       <br>

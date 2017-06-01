@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Instructions for {{die.name}}{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <h2>Instructions for entering data for die : <i>{{die.name}}</i></h2>
+    <table cellspacing=0 border=0>
+    <tr>
+    <td valign="top">
+      {% load static %}
+      <img src="{% static die.instructionsImage.url %}">
+    </td>
+    <td valign="top">
+      {{ die.instructions | safe }}
+    </td>
+    </tr>
+    </table>
+  {% else %}
+    <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before reading the instructions.</h2>
+  {% endif %}
+{% endblock %}

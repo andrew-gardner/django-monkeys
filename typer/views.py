@@ -44,12 +44,11 @@ def indexView(request, dieName):
 
     else:
         # Data has been POSTed
-        # TODO: They say getting the data out of the request is bad form - fix
         form = MonkeyTyperForm(request.POST)
-        typedText = request.POST['typedField']
+        typedText = form.cleaned_data['typedField']
 
         # Pull the previous die field out of the form's hidden data
-        dieId = int(request.POST['dieField'])
+        dieId = int(form.cleaned_data['dieField'])
         dieField = TypedDie.objects.filter(id=dieId)[0]
 
         # Good text in a POST?  Validate and save

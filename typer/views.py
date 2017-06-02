@@ -43,48 +43,52 @@ def indexView(request, dieName):
         return imageInput(request, randomId)
 
     else:
-        # Data has been POSTed
+        # Data has been POSTed, error if it isn't cool
         form = MonkeyTyperForm(request.POST)
-        typedText = form.cleaned_data['typedField']
+        if not form.is_valid():
+            # Redisplay the same page but with an error message
+            return imageInput(request, dieField.id, True)
 
         # Pull the previous die field out of the form's hidden data
-        dieId = int(form.cleaned_data['dieField'])
+        dieId = int(request.POST['dieField'])
         dieField = TypedDie.objects.filter(id=dieId)[0]
+
+        # Gather the typed text
+        typedText = form.cleaned_data['typedField']
 
         # Good text in a POST?  Validate and save
         if typedText != "":
-            if form.is_valid():
-                # If someone snuck in and completed the field before you (!)
-                if dieField.completed():
-                    # TODO: Convert to django/Python logging
-                    dieObject = dieField.dieImage.die
-                    dieImageObject = dieField.dieImage
-                    print("User %s attempted to submit %s die image %s typed id %d, but someone else did first" %
-                          (request.user,
-                           dieObject,
-                           dieImageObject,
-                           dieId))
+            # If someone snuck in and completed the field before you (!)
+            if dieField.completed():
+                # TODO: Convert to django/Python logging
+                dieObject = dieField.dieImage.die
+                dieImageObject = dieField.dieImage
+                print("User %s attempted to submit %s die image %s typed id %d, but someone else did first" %
+                      (request.user,
+                       dieObject,
+                       dieImageObject,
+                       dieId))
 
-                    # Find the next available dieField that is not completed
-                    availableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject) & Q(dieImage=dieImageObject))
+                # Find the next available dieField that is not completed
+                availableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject) & Q(dieImage=dieImageObject))
 
-                    # If there is no place to squeeze the data in, just return the next random page
-                    if not len(availableFields):
-                        print("And there was no place free to put their work, so it got trashed")
-                        return HttpResponseRedirect('/typer/' + dieName)
+                # If there is no place to squeeze the data in, just return the next random page
+                if not len(availableFields):
+                    print("And there was no place free to put their work, so it got trashed")
+                    return HttpResponseRedirect('/typer/' + dieName)
 
-                    # If there is space, stuff it in the first object that's available
-                    dieField = availableFields[0]
-                    print("So we are adding it to field %s instead" % dieField)
+                # If there is space, stuff it in the first object that's available
+                dieField = availableFields[0]
+                print("So we are adding it to field %s instead" % dieField)
 
-                # Submit
-                dieField.submitter = request.user
-                dieField.submitDate = timezone.now()
-                dieField.typedField = typedText
-                dieField.save()
+            # Submit
+            dieField.submitter = request.user
+            dieField.submitDate = timezone.now()
+            dieField.typedField = typedText
+            dieField.save()
 
-                # Return the next random page
-                return HttpResponseRedirect('/typer/' + dieName)
+            # Return the next random page
+            return HttpResponseRedirect('/typer/' + dieName)
         else:
             # Redisplay the same page but with an error message
             return imageInput(request, dieField.id, True)
@@ -133,8 +137,8 @@ def summaryHomeView(request, dieName):
     dieImageEntryCounts = list()
     # TODO: This is very slow right now - a clever query should be able to get me the same info as this loop
     for di in allAvailableDieImages:
-        completedFieldCount = 0
         typedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=di.id))
+        completedFieldCount = 0
         for tf in typedFields:
             if tf.completed():
                 completedFieldCount += 1

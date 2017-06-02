@@ -43,58 +43,58 @@ def indexView(request, dieName):
         return imageInput(request, randomId)
 
     else:
-        # Data has been POSTed, error if it isn't cool
+        # Data has been POSTed
         form = MonkeyTyperForm(request.POST)
-        if not form.is_valid():
-            # Redisplay the same page but with an error message
-            return imageInput(request, dieField.id, True)
 
         # Pull the previous die field out of the form's hidden data
         dieId = int(request.POST['dieField'])
         dieField = TypedDie.objects.filter(id=dieId)[0]
 
+        # Insure input is valid
+        # TODO: There is a very good chance exceptions aren't being used correctly here
+        if not form.is_valid():
+            # Redisplay the same page but with an error message
+            error = form.errors.as_data()['typedField'][0].message
+            return imageInput(request, dieField.id, error, form.data['typedField'])
+
         # Gather the typed text
         typedText = form.cleaned_data['typedField']
 
-        # Good text in a POST?  Validate and save
-        if typedText != "":
-            # If someone snuck in and completed the field before you (!)
-            if dieField.completed():
-                # TODO: Convert to django/Python logging
-                dieObject = dieField.dieImage.die
-                dieImageObject = dieField.dieImage
-                print("User %s attempted to submit %s die image %s typed id %d, but someone else did first" %
-                      (request.user,
-                       dieObject,
-                       dieImageObject,
-                       dieId))
+        # If the strange situation occurred where someone snuck in and completed the field before you
+        if dieField.completed():
+            # TODO: Convert to django/Python logging
+            dieObject = dieField.dieImage.die
+            dieImageObject = dieField.dieImage
+            print("User %s attempted to submit %s die image %s typed id %d, but someone else did first" %
+                  (request.user,
+                   dieObject,
+                   dieImageObject,
+                   dieId))
 
-                # Find the next available dieField that is not completed
-                availableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject) & Q(dieImage=dieImageObject))
+            # Find the next available dieField that is not completed
+            availableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject) & Q(dieImage=dieImageObject))
 
-                # If there is no place to squeeze the data in, just return the next random page
-                if not len(availableFields):
-                    print("And there was no place free to put their work, so it got trashed")
-                    return HttpResponseRedirect('/typer/' + dieName)
+            # If there is no place to squeeze the data in, just return the next random page
+            if not len(availableFields):
+                print("And there was no place free to put their work, so it got trashed")
+                return HttpResponseRedirect('/typer/' + dieName)
 
-                # If there is space, stuff it in the first object that's available
-                dieField = availableFields[0]
-                print("So we are adding it to field %s instead" % dieField)
+            # If there is space, stuff it in the first object that's available
+            print("So we are adding it to field %s instead" % dieField)
+            dieField = availableFields[0]
 
-            # Submit
-            dieField.submitter = request.user
-            dieField.submitDate = timezone.now()
-            dieField.typedField = typedText
-            dieField.save()
+        # Submit the user's input
+        dieField.submitter = request.user
+        dieField.submitDate = timezone.now()
+        dieField.typedField = typedText
+        dieField.save()
 
-            # Return the next random page
-            return HttpResponseRedirect('/typer/' + dieName)
-        else:
-            # Redisplay the same page but with an error message
-            return imageInput(request, dieField.id, True)
+        # Return the next random page
+        # TODO: Change to a 'reverse' call (how does one add diename after?)
+        return HttpResponseRedirect('/typer/' + dieName)
 
 
-def imageInput(request, fieldId, typedTextMissingError=False):
+def imageInput(request, fieldId, error=None, fieldData=None):
     """
     Helper function for the indexView.
     """
@@ -103,13 +103,18 @@ def imageInput(request, fieldId, typedTextMissingError=False):
     di = dieField.dieImage
     d = di.die
 
+    # Populate the form with the raw data from the previous submit if there was an error
+    form = MonkeyTyperForm()
+    if error and fieldData:
+        form = MonkeyTyperForm(initial={'typedField': fieldData})
+
     # Display the input page
     context = {
                   'die': d,
                   'dieImage': di,
                   'typedDie': dieField,
-                  'form' : MonkeyTyperForm,
-                  'typedTextMissingError' : typedTextMissingError
+                  'form' : form,
+                  'error' : error,
               }
     return render(request, 'typer/imageInput.html', context)
 

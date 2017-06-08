@@ -3,6 +3,7 @@ import random
 import logging
 
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -44,11 +45,12 @@ def indexView(request, dieName):
 
     else:
         # Data has been POSTed
-        form = MonkeyTyperForm(request.POST)
-
         # Pull the previous die field out of the form's hidden data
         dieId = int(request.POST['dieField'])
         dieField = TypedDie.objects.filter(id=dieId)[0]
+
+        # Create a form object from the post data and knowledge of which dieField we're dealing with
+        form = MonkeyTyperForm(request.POST, instance=dieField)
 
         # Insure input is valid
         # TODO: There is a very good chance exceptions aren't being used correctly here
@@ -90,8 +92,7 @@ def indexView(request, dieName):
         dieField.save()
 
         # Return the next random page
-        # TODO: Change to a 'reverse' call (how does one add diename after?)
-        return HttpResponseRedirect('/typer/' + dieName)
+        return HttpResponseRedirect(reverse('typer:index', kwargs={'dieName':dieName}))
 
 
 def imageInput(request, fieldId, error=None, fieldData=None):
@@ -104,9 +105,10 @@ def imageInput(request, fieldId, error=None, fieldData=None):
     d = di.die
 
     # Populate the form with the raw data from the previous submit if there was an error
-    form = MonkeyTyperForm()
     if error and fieldData:
-        form = MonkeyTyperForm(initial={'typedField': fieldData})
+        form = MonkeyTyperForm(instance=dieField, initial={'typedField': fieldData})
+    else:
+        form = MonkeyTyperForm(instance=dieField)
 
     # Display the input page
     context = {

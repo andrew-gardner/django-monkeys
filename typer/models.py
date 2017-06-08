@@ -22,6 +22,11 @@ class DieImage(models.Model):
     cropCol = models.IntegerField('Cropped Column')
     image = models.ImageField('Die Image')
 
+    # These two are specific to images of ROMs
+    # It's possible this should live in a subclass of DieImage someday
+    bitWidth = models.IntegerField('Bits wide', default=0)
+    bitHeight = models.IntegerField('Bits tall', default=0)
+
     def __str__(self):
         return ("%s_%d_%d" % (self.die.name, self.cropCol, self.cropRow))
 

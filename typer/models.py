@@ -28,7 +28,7 @@ class DieImage(models.Model):
     bitHeight = models.IntegerField('Bits tall', default=0)
 
     def __str__(self):
-        return ("%s_%d_%d" % (self.die.name, self.cropCol, self.cropRow))
+        return ("%s_%02d_%02d" % (self.die.name, self.cropCol, self.cropRow))
 
 
 class TypedDie(models.Model):

@@ -43,7 +43,7 @@ class MonkeyTyperForm(forms.ModelForm):
         for line in cleanedData.splitlines():
             allOk = all(c in okChars for c in line)
             if not allOk:
-                raise forms.ValidationError('Invalid characters entered (just 0 and 1 please)')
+                raise forms.ValidationError('Invalid characters entered (just 0, 1, and ? please)')
 
         # Validation 2 : Insure the data is the proper number of bits in all dimensions
         colCount = 0

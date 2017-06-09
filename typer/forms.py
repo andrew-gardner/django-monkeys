@@ -57,10 +57,10 @@ class MonkeyTyperForm(forms.ModelForm):
         bitWidth = self.instance.dieImage.bitWidth
         bitHeight = self.instance.dieImage.bitHeight
         if rowCount != bitHeight:
-            raise forms.ValidationError('There are not enough rows of typed bits present - there should be %d' % bitHeight)
-        for line in cleanedData.splitlines():
+            raise forms.ValidationError('You gave me %d rows of typed bits but I need %d' % (rowCount, bitHeight))
+        for linei, line in enumerate(cleanedData.splitlines()):
             lineLen = len(line.strip())
             if lineLen != bitWidth:
-                raise forms.ValidationError('One or more rows does not have %d bits' % bitWidth)
+                raise forms.ValidationError('Row %d has %d bits but should have %d bits' % (linei + 1, lineLen, bitWidth))
 
         return cleanedData

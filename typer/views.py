@@ -48,6 +48,7 @@ def indexView(request, dieName):
         # Pull the previous die field out of the form's hidden data
         dieId = int(request.POST['dieField'])
         dieField = TypedDie.objects.filter(id=dieId)[0]
+        someoneCompletedTheFieldBeforeYou = dieField.completed()
 
         # Create a form object from the post data and knowledge of which dieField we're dealing with
         form = MonkeyTyperForm(request.POST, instance=dieField)
@@ -63,7 +64,7 @@ def indexView(request, dieName):
         typedText = form.cleaned_data['typedField']
 
         # If the strange situation occurred where someone snuck in and completed the field before you
-        if dieField.completed():
+        if someoneCompletedTheFieldBeforeYou:
             # TODO: Convert to django/Python logging
             dieObject = dieField.dieImage.die
             dieImageObject = dieField.dieImage

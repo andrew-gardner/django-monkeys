@@ -187,7 +187,7 @@ def summaryView(request, dieName, imageId):
     populatedForms = list()
     submitTimeArray = list()
     for aaf in allAvailableFields:
-        populatedForms.append(MonkeyTyperForm(initial={'typedField': aaf.typedField}))
+        populatedForms.append(MonkeyTyperForm(instance=aaf, initial={'typedField': aaf.typedField}))
         submitterArray.append(aaf.submitter)
         submitTimeArray.append(aaf.submitDate)
 

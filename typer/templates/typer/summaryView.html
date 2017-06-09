@@ -9,29 +9,29 @@
     <tr>
 
     <td valign="top">
-    <table>
-    <tr>
-    <td valign="top">
-    {% load static %}
-    <img src="{% static dieImage.image.url %}">
-    </td>
-    </tr>
-    </table>
+      <table>
+      <tr>
+      <td valign="top">
+        {% load static %}
+        <img src="{% static dieImage.image.url %}">
+      </td>
+      </tr>
+      </table>
     </td>
 
     {% for tf, submitter, time, index in dieInfoArray %}
     <td valign="top">
-      <table cellspacing=0 cellpadding=0 border=0>
       <form action="" method="post">
+      <table cellspacing=0 cellpadding=0 border=0>
       {% csrf_token %}
       <tr>
-        <td valign="top"><code>{{ tf.typedField }}</code> </td>
+        <td valign="top"> <code>{{ tf.typedField }}</code> </td>
       </tr>
       <tr>
-        <td valign="top">{{submitter}}</td>
+        <td valign="top"> {{submitter}} </td>
       </tr>
       <tr>
-        <td valign="top">{{time}}</td>
+        <td valign="top"> {{time}} </td>
       </tr>
       <tr>
         <td valign="top"> <input type="submit" name="saveButton{{index}}" value="Save" /> </td>
@@ -39,12 +39,11 @@
       <tr>
         <td valign="top"> <input type="submit" name="clearButton{{index}}" value="Clear" /> </td>
       </tr>
-      </form>
       </table>
+      </form>
     </td>
     {% endfor %}
 
-    </td>
     </tr>
     </table>
   {% else %}

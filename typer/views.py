@@ -15,13 +15,14 @@ logger = logging.getLogger(__name__)
 
 def indexView(request, dieName):
     """
-    Given a particular die, get a list of all its
-    DieImages, and choose one of those to present
+    This view displays a randomly choosen DieImage for a given Die.  Secret
+    data about which die has been randomly chosen passes through to the POST
+    method since this view decides it dynamically.
     """
     userIsStaff = request.user.is_staff
 
-    if request.method != "POST":
-        # Standard page display (no POST)
+    if request.method == 'GET':
+        # Standard page display
         dieObject = Die.objects.filter(name=dieName)[0]
         allAvailableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject))
 
@@ -53,7 +54,7 @@ def indexView(request, dieName):
         # Create a form object from the post data and knowledge of which dieField we're dealing with
         form = MonkeyTyperForm(request.POST, instance=dieField)
 
-        # Insure input is valid
+        # Insure input is valid (if it is, data is stored in dieField, but not saved to the database)
         # TODO: There is a very good chance exceptions aren't being used correctly here
         if not form.is_valid():
             # Redisplay the same page but with an error message
@@ -98,7 +99,8 @@ def indexView(request, dieName):
 
 def imageInput(request, fieldId, error=None, fieldData=None):
     """
-    Helper function for the indexView.
+    Helper function for the indexView - responsible for creating the page
+    that features the input interface & possible error messages.
     """
     # Recover the requested die image and its corresponding die
     dieField = get_object_or_404(TypedDie, id=fieldId)
@@ -124,6 +126,8 @@ def imageInput(request, fieldId, error=None, fieldData=None):
 
 def dieInstructionsView(request, dieName):
     """
+    A view that simply displays the instructions image and instruction text
+    for the given Die.
     """
     dieObject = Die.objects.filter(name=dieName)[0]
 
@@ -136,6 +140,10 @@ def dieInstructionsView(request, dieName):
 
 def summaryHomeView(request, dieName):
     """
+    An administrative view that displays a list of images and info about
+    the typed information for each for the given Die.  The administrator
+    can see how much data has been entered for each image and click on
+    the image to open a new view showing more details.
     """
     dieObject = Die.objects.filter(name=dieName)[0]
     allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
@@ -162,8 +170,9 @@ def summaryHomeView(request, dieName):
 
 def summaryView(request, dieName, imageId):
     """
-    Displays a summary of all the entered information for a given
-    Die and DieImage.
+    This administrative view displays a summary of all the entered information
+    for a given Die and DieImage.  One can also do rudimentary changes to the
+    entered data and compare results.
     """
     dieObject = Die.objects.filter(name=dieName)[0]
     dieImage = DieImage.objects.filter(id=imageId)[0]

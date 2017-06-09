@@ -12,6 +12,7 @@ class EmailFreeRegistrationForm(RegistrationForm):
 
 class ContactForm(forms.Form):
     """
+    A form layout for contacting the administrators of the site.
     """
     fromEmail = forms.EmailField(required=True, label="From e-mail")
     subject = forms.CharField(required=True, label="Subject")

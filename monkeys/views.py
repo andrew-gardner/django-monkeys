@@ -7,6 +7,9 @@ from .forms import ContactForm
 
 def homeView(request):
     """
+    This view simply displays the list of all Dies in the database.
+    These can be clicked on to enter data, instructions can be read,
+    or administrators can inspect results.
     """
     dieList = Die.objects.all()
 
@@ -18,6 +21,8 @@ def homeView(request):
 
 def contactView(request):
     """
+    A simple view that shows the Contact form and sends an e-mail to the
+    administrators when submitted.
     """
     submitSuccess = False
     if request.method == 'GET':

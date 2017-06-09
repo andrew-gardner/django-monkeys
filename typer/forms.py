@@ -4,9 +4,15 @@ from .models import TypedDie
 
 class MonkeyTyperForm(forms.ModelForm):
     """
+    This form displays a TypedDie object and validates information typed
+    by a user.
     """
 
     def __init__(self, *args, **kwargs):
+        """
+        Standard initialization routine, but with an explicit definition of
+        the typedField's width and height based on database info.
+        """
         super(MonkeyTyperForm, self).__init__(*args, **kwargs)
         self.fields['typedField'].widget = forms.Textarea(attrs={'cols': self.instance.dieImage.bitWidth+2,
                                                                  'rows': self.instance.dieImage.bitHeight+2})
@@ -18,8 +24,8 @@ class MonkeyTyperForm(forms.ModelForm):
 
     def clean_typedField(self):
         """
-        A validator for the typedField field that insures the field isn't blank
-        and various other fun things.
+        A validator for the typedField field that insures the field isn't blank,
+        the data contains only valid characters, and various other fun things.
         """
         data = self.cleaned_data['typedField']
 

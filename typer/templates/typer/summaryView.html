@@ -5,35 +5,46 @@
 {% block content %}
   {% if user.is_superuser %}
     <h2>These are the results for die image {{dieImage.id}} for {{die.name}}</h2><br>
-    <table cellspacing=0 border=0>
+    <table cellspacing=0 cellpadding=0 border=0>
+    <tr>
+
+    <td valign="top">
+    <table>
     <tr>
     <td valign="top">
     {% load static %}
-    <img src="{% static dieImage.image.url %}"></td>
-    {% for tda in typedDieArray %}
-      <td valign="top"> <code>{{ tda.typedField }}</code> </td>
-    {% endfor %}
+    <img src="{% static dieImage.image.url %}">
+    </td>
     </tr>
-    <tr>
-    <td></td>
-    {% for sa in submitterArray %}
-      <td valign="top"> {{ sa }} </td>
-    {% endfor %}
-    </tr>
-    <tr>
-    <td></td>
-    {% for sta in submitTimeArray %}
-      <td valign="top"> {{ sta }} </td>
-    {% endfor %}
-    </tr>
-    <tr>
-    <td></td>
-    {% for sbn in submitButtonNumbers %}
+    </table>
+    </td>
+
+    {% for tf, submitter, time, index in dieInfoArray %}
+    <td valign="top">
+      <table cellspacing=0 cellpadding=0 border=0>
       <form action="" method="post">
       {% csrf_token %}
-      <td valign="top"> <input type="submit" name="submitButton{{sbn}}" value="Clear" /> </td>
+      <tr>
+        <td valign="top"><code>{{ tf.typedField }}</code> </td>
+      </tr>
+      <tr>
+        <td valign="top">{{submitter}}</td>
+      </tr>
+      <tr>
+        <td valign="top">{{time}}</td>
+      </tr>
+      <tr>
+        <td valign="top"> <input type="submit" name="saveButton{{index}}" value="Save" /> </td>
+      </tr>
+      <tr>
+        <td valign="top"> <input type="submit" name="clearButton{{index}}" value="Clear" /> </td>
+      </tr>
       </form>
+      </table>
+    </td>
     {% endfor %}
+
+    </td>
     </tr>
     </table>
   {% else %}

@@ -61,9 +61,6 @@ def indexView(request, dieName):
             error = form.errors.as_data()['typedField'][0].message
             return imageInput(request, dieField.id, error, form.data['typedField'])
 
-        # Gather the typed text
-        typedText = form.cleaned_data['typedField']
-
         # If the strange situation occurred where someone snuck in and completed the field before you
         if someoneCompletedTheFieldBeforeYou:
             # TODO: Convert to django/Python logging
@@ -90,7 +87,7 @@ def indexView(request, dieName):
         # Submit the user's input
         dieField.submitter = request.user
         dieField.submitDate = timezone.now()
-        dieField.typedField = typedText
+        # No need to update typedField since it's already saved in the is_valid() function call above
         dieField.save()
 
         # Return the next random page
@@ -180,17 +177,38 @@ def summaryView(request, dieName, imageId):
 
     if request.method == "POST":
         # Pull which clear button was pressed
-        buttonPressed = [ k for k,v in request.POST.items() if k.startswith('submitButton')][0]
-        clearNumberRe = re.search(r'(\d+)$', buttonPressed)
-        clearNumber = int(clearNumberRe.group(0))
-        workingField = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=imageId))[clearNumber]
+        clearButtonsPressed = [k for k,v in request.POST.items() if k.startswith('clearButton')]
+        if len(clearButtonsPressed) > 0:
+            firstClearButtonPressed = clearButtonsPressed[0]
+            clearNumberRe = re.search(r'(\d+)$', firstClearButtonPressed)
+            clearNumber = int(clearNumberRe.group(0))
+            workingField = allAvailableFields[clearNumber]
 
-        # Clear the form
-        workingField.submitter = None
-        workingField.submitDate = None
-        workingField.typedField = ""
-        workingField.save()
-        allAvailableFields[clearNumber].refresh_from_db()
+            # Clear the form
+            workingField.submitter = None
+            workingField.submitDate = None
+            workingField.typedField = ""
+            workingField.save()
+            allAvailableFields[clearNumber].refresh_from_db()
+
+        # Pull which save button was pressed
+        saveButtonsPressed = [k for k,v in request.POST.items() if k.startswith('saveButton')]
+        if len(saveButtonsPressed) > 0:
+            firstSaveButtonPressed = saveButtonsPressed[0]
+            saveNumberRe = re.search(r'(\d+)$', firstSaveButtonPressed)
+            saveNumber = int(saveNumberRe.group(0))
+            workingField = allAvailableFields[saveNumber]
+
+            form = MonkeyTyperForm(request.POST, instance=workingField)
+            if not form.is_valid():
+                # TODO: Do something interesting here (really the admin should know better).
+                #       As for now, it just reverts your changes.
+                pass
+            else:
+                workingField.submitter = request.user
+                workingField.submitDate = timezone.now()
+                workingField.save()
+
 
     # Build the arrays that we want to display
     submitterArray = list()
@@ -204,10 +222,7 @@ def summaryView(request, dieName, imageId):
     context = {
                   'die': dieObject,
                   'dieImage': dieImage,
-                  'typedDieArray': populatedForms,
-                  'submitterArray': submitterArray,
-                  'submitTimeArray': submitTimeArray,
-                  'submitButtonNumbers': range(len(submitTimeArray))
+                  'dieInfoArray': zip(populatedForms, submitterArray, submitTimeArray, range(len(submitTimeArray)))
               }
 
     return render(request, 'typer/summaryView.html', context)

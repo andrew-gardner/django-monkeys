@@ -127,3 +127,18 @@ STATICFILES_DIRS = [ os.path.join(BASE_DIR, "static") ]
 
 # TODO: If I want to point at an app, can I do it without hard-coding the app path?
 LOGIN_REDIRECT_URL = '/'
+
+# You must define these in local settings for "contact" to work
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'XXX'
+EMAIL_HOST_PASSWORD = 'XXX'
+EMAIL_USE_TLS = True
+EMAIL_CONTACT_LIST = ['XXX@gmail.com']
+
+# Now allow local overrides
+try:
+    from local_settings import *
+except ImportError as e:
+    pass
+

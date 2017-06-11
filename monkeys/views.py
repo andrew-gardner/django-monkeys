@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -37,7 +38,7 @@ def contactView(request):
 
             # Send the mail
             try:
-                send_mail(subject, message, fromEmail, ['chowderq@yahoo.com'])
+                send_mail(subject, message, fromEmail, settings.EMAIL_CONTACT_LIST)
             except BadHeaderError:
                 return HttpResponse('Invalid e-mail header found.')
             submitSuccess = True

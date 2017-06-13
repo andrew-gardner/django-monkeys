@@ -4,7 +4,7 @@
 
 {% block content %}
   {% if user.is_superuser %}
-    <h2>These are the results for die image {{dieImage.id}} for {{die.name}}</h2><br>
+    <h2>These are the results for die image <i>{{dieImageBasename}}</i> under die <i>{{die.name}}</i></h2><br>
     <table cellspacing=0 cellpadding=0 border=0>
     <tr>
 
@@ -19,13 +19,13 @@
       </table>
     </td>
 
-    {% for tf, submitter, time, index in dieInfoArray %}
+    {% for tField, submitter, time, index in dieInfoArray %}
     <td valign="top">
       <form action="" method="post">
       <table cellspacing=0 cellpadding=0 border=0>
       {% csrf_token %}
       <tr>
-        <td valign="top"> <code>{{ tf.typedField }}</code> </td>
+        <td valign="top"> <code>{{ tField.typedField }}</code> </td>
       </tr>
       <tr>
         <td valign="top"> {{submitter}} </td>

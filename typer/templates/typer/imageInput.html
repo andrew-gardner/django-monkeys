@@ -5,7 +5,7 @@
 {% block content %}
   {% if user.is_authenticated %}
     {% if user.is_staff %}
-      <h2>You, the administrator, are looking at die image {{dieImage.image.url}} and entry field {{typedDie.id}}</h2><br>
+      <h2>You, the administrator, are looking at die image <i>{{dieImageBasename}}</i> and entry field {{typedDie.id}}</h2><br>
     {% endif %}
     {% if error %}
       An error has been detected.  Please fix the following error and submit again<br>

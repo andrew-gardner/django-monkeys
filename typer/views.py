@@ -1,3 +1,4 @@
+import os
 import re
 import random
 import logging
@@ -110,10 +111,14 @@ def imageInput(request, fieldId, error=None, fieldData=None):
     else:
         form = MonkeyTyperForm(instance=dieField)
 
+    # Prune off just the filename from the dieImage url
+    dieImageBasename = os.path.basename(dieField.dieImage.image.url)
+
     # Display the input page
     context = {
                   'die': d,
                   'dieImage': di,
+                  'dieImageBasename': dieImageBasename,
                   'typedDie': dieField,
                   'form' : form,
                   'error' : error,
@@ -219,9 +224,13 @@ def summaryView(request, dieName, imageId):
         submitterArray.append(aaf.submitter)
         submitTimeArray.append(aaf.submitDate)
 
+    # Prune off just the filename from the dieImage url
+    dieImageBasename = os.path.basename(dieImage.image.url)
+
     context = {
                   'die': dieObject,
                   'dieImage': dieImage,
+                  'dieImageBasename': dieImageBasename,
                   'dieInfoArray': zip(populatedForms, submitterArray, submitTimeArray, range(len(submitTimeArray)))
               }
 

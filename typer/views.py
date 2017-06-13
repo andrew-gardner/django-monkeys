@@ -222,7 +222,10 @@ def summaryView(request, dieName, imageId):
     for aaf in allAvailableFields:
         populatedForms.append(MonkeyTyperForm(instance=aaf, initial={'typedField': aaf.typedField}))
         submitterArray.append(aaf.submitter)
-        submitTimeArray.append(aaf.submitDate)
+        if aaf.submitDate:
+            submitTimeArray.append(str(aaf.submitDate)[2:10] + "<br />" + str(aaf.submitDate)[12:16])
+        else:
+            submitTimeArray.append("N/A<br>N/A<br>")
 
     # Prune off just the filename from the dieImage url
     dieImageBasename = os.path.basename(dieImage.image.url)

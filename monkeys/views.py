@@ -13,11 +13,14 @@ def homeView(request):
     or administrators can inspect results.
     """
     dieList = Die.objects.all()
-    siteSettings = SiteSettings.objects.all()[0]
+    siteSettings = SiteSettings.objects.all()
+    if len(siteSettings):
+        siteSettings = siteSettings[0]
+    introText = siteSettings.introText if siteSettings else ""
 
     context = {
                   'dieList': dieList,
-                  'introText': siteSettings.introText
+                  'introText': introText
               }
     return render(request, 'home.html', context)
 

@@ -7,10 +7,21 @@ class Die(models.Model):
     """
     name = models.CharField(max_length=256)
     instructions = models.TextField('Instructions', blank=True)
-    instructionsImage = models.ImageField('Instructions Image', null=True)
 
     def __str__(self):
         return ("%s" % (self.name))
+
+
+class InstructionsImage(models.Model):
+    """
+    A class to hold an instruction image for the Die class' instructions.
+    """
+    die = models.ForeignKey(Die, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
+    image = models.ImageField('Die Image')
+
+    def __str__(self):
+        return ("Instructions image %s for Die %s" % (self.name, self.die.name))
 
 
 class DieImage(models.Model):
@@ -48,3 +59,4 @@ class TypedDie(models.Model):
 
     def __str__(self):
         return ('TypedDie for DieImage "%s" (%r)' % (self.dieImage, self.completed()))
+

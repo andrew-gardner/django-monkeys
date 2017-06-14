@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.contrib.staticfiles.templatetags import staticfiles
 from .models import Die, DieImage, TypedDie
 from .forms import MonkeyTyperForm
 
@@ -132,6 +133,28 @@ def dieInstructionsView(request, dieName):
     for the given Die.
     """
     dieObject = Die.objects.filter(name=dieName)[0]
+
+    instructions = dieObject.instructions
+
+    # Find all the instances of images in our special markup [[[IMAGE_NAME (WIDTH HEIGHT)]]]
+    m = re.finditer(r'\[\[\[(.*?)\]\]\]', instructions)
+    for foundMatch in m:
+        noBrackets = foundMatch.group(0).replace("[", "").replace("]", "")
+        splitData = noBrackets.split()
+        imageName = splitData[0]
+        if len(splitData) > 1:
+            imageWidth = int(splitData[1])
+            imageHeight = int(splitData[2])
+        imageObject = dieObject.instructionsimage_set.filter(Q(name=imageName))
+        imageUrl = staticfiles.static(imageObject[0].image.url)
+        if len(splitData) > 1:
+            refText = """<img src="%s" width=%d height=%d>""" % (imageUrl, imageWidth, imageHeight)
+        else:
+            refText = """<img src="%s">""" % (imageUrl)
+        instructions = instructions.replace(foundMatch.group(0), refText)
+
+    # Copy the instructions back to a local die object (no database write)
+    dieObject.instructions = instructions
 
     context = {
                   'die' : dieObject

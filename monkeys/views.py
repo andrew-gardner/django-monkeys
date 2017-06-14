@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from typer.models import Die
+from typer.models import Die, SiteSettings
 from .forms import ContactForm
 
 
@@ -13,9 +13,11 @@ def homeView(request):
     or administrators can inspect results.
     """
     dieList = Die.objects.all()
+    siteSettings = SiteSettings.objects.all()[0]
 
     context = {
-                  'dieList': dieList
+                  'dieList': dieList,
+                  'introText': siteSettings.introText
               }
     return render(request, 'home.html', context)
 

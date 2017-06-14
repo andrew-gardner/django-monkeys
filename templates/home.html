@@ -19,7 +19,7 @@
     {% endfor %}
   {% else %}
     <h3>
-    {% include "home_local.html" %}
+    {{ introText | safe }}<br />
     Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before the typing can begin.
     </h3>
   {% endif %}

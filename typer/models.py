@@ -1,6 +1,17 @@
 from django.db import models
 
 
+class SiteSettings(models.Model):
+    """
+    A collection of settings that can be defined site-wide.
+    """
+    introText = models.TextField('Intro Text', blank=True)
+
+
+    def __str__(self):
+        return ("Site settings:\nintroText:%s" % (self.introText))
+
+
 class Die(models.Model):
     """
     A model storing information for a die that has been imaged.

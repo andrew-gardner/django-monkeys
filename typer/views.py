@@ -133,7 +133,6 @@ def dieInstructionsView(request, dieName):
     for the given Die.
     """
     dieObject = Die.objects.filter(name=dieName)[0]
-
     instructions = dieObject.instructions
 
     # Find all the instances of images in our special markup [[[IMAGE_NAME (WIDTH HEIGHT)]]]
@@ -155,7 +154,6 @@ def dieInstructionsView(request, dieName):
 
     # Copy the instructions back to a local die object (no database write)
     dieObject.instructions = instructions
-
     context = {
                   'die' : dieObject
               }

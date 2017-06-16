@@ -39,7 +39,12 @@ def contactView(request):
             fromEmail = form.cleaned_data['fromEmail']
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
-            message = "From user : " + str(request.user.username) + "\n\n" + ("-" * 40) + "\n\n" + message
+            finalMessage  = "From user : " + str(request.user.username) + "\n"
+            finalMessage += "Return e-mail : " + str(fromEmail) + "\n\n"
+            finalMessage += ("-" * 30) + "\n\n"
+            finalMessage += message
+
+            print(finalMessage)
 
             # Send the mail
             try:

@@ -44,11 +44,9 @@ def contactView(request):
             finalMessage += ("-" * 30) + "\n\n"
             finalMessage += message
 
-            print(finalMessage)
-
             # Send the mail
             try:
-                send_mail(subject, message, fromEmail, settings.EMAIL_CONTACT_LIST)
+                send_mail(subject, finalMessage, fromEmail, settings.EMAIL_CONTACT_LIST)
             except BadHeaderError:
                 return HttpResponse('Invalid e-mail header found.')
             submitSuccess = True

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Statistics for {{die.name}}{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <h2>Statistics for user {{user.username}} entering data for die : <i>{{die.name}}</i></h2>
+    You have typed {{typedCount}} fields for this die.<br />
+    This is {{typedPercent}}% of the total number of images for this die.<br />
+    <br />
+    This is the work you have done:<br />
+    <table cellspacing=10 cellpadding=10 border=0>
+    {% for field in fields %}
+    <tr>
+
+    <td valign="top">
+      Row {{ field.dieImage.cropRow }}, Column {{ field.dieImage.cropCol }}<br />
+      {% load static %}
+      <img src="{% static field.dieImage.image.url %}"><br />
+    </td>
+    <td valign="top">
+      <code>{{ field.typedField | linebreaks }}</code>
+    </td>
+
+    </tr>
+
+    {% endfor %}
+    </table>
+
+  {% else %}
+    <h2>Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before reading the instructions.</h2>
+  {% endif %}
+{% endblock %}

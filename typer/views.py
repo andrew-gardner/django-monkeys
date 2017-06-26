@@ -127,6 +127,29 @@ def imageInput(request, fieldId, error=None, fieldData=None):
     return render(request, 'typer/imageInput.html', context)
 
 
+def dieUserStatisticsView(request, dieName):
+    """
+    """
+    dieObject = Die.objects.filter(name=dieName)[0]
+
+    # Display
+    allFieldsForDie = DieImage.objects.filter(Q(die=dieObject))
+    userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=request.user))
+
+    # TODO: Compare user's typed data with that of the others & post information about that
+
+    # TODO: Low importance fix - if you're an admin and you 'typed the same die twice' this number is wrong
+    typedPercent = round(float(len(userTypedTheseFields)) / float(len(allFieldsForDie)) * 100.0, 2)
+    context = {
+                  'die' : dieObject,
+                  'fields' : userTypedTheseFields,
+                  'typedCount' : len(userTypedTheseFields),
+                  'typedPercent' : typedPercent
+              }
+    return render(request, 'typer/userStatistics.html', context)
+
+
+
 def dieInstructionsView(request, dieName):
     """
     A view that simply displays the instructions image and instruction text
@@ -158,7 +181,6 @@ def dieInstructionsView(request, dieName):
                   'die' : dieObject
               }
     return render(request, 'typer/instructions.html', context)
-
 
 
 def adminSummaryHomeView(request, dieName):

@@ -172,6 +172,8 @@ def adminSummaryHomeView(request, dieName):
     allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
 
     # Count all the entered fields for this die image (TODO: There must be a more Pythonic way to do this)
+    totalFields = 0
+    totalCompletedFields = 0
     dieIsCompleted = list()
     dieImageEntryCounts = list()
     # TODO: This is very slow right now - a clever query should be able to get me the same info as this loop
@@ -181,12 +183,17 @@ def adminSummaryHomeView(request, dieName):
         for tf in typedFields:
             if tf.completed():
                 completedFieldCount += 1
+        totalFields += len(typedFields)
+        totalCompletedFields += completedFieldCount
         dieImageEntryCounts.append(completedFieldCount)
         dieIsCompleted.append(completedFieldCount == len(typedFields))
 
+    completedPercent = round(float(totalCompletedFields) / float(totalFields) * 100.0, 2)
+
     context = {
                   'die': dieObject,
-                  'dieImageInfo': zip(allAvailableDieImages, dieImageEntryCounts, dieIsCompleted)
+                  'dieImageInfo': zip(allAvailableDieImages, dieImageEntryCounts, dieIsCompleted),
+                  'completedPercent': completedPercent
               }
     return render(request, 'typer/adminSummaryHome.html', context)
 

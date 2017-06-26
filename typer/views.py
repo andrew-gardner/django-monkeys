@@ -161,7 +161,7 @@ def dieInstructionsView(request, dieName):
 
 
 
-def summaryHomeView(request, dieName):
+def adminSummaryHomeView(request, dieName):
     """
     An administrative view that displays a list of images and info about
     the typed information for each for the given Die.  The administrator
@@ -188,10 +188,10 @@ def summaryHomeView(request, dieName):
                   'die': dieObject,
                   'dieImageInfo': zip(allAvailableDieImages, dieImageEntryCounts, dieIsCompleted)
               }
-    return render(request, 'typer/summaryHome.html', context)
+    return render(request, 'typer/adminSummaryHome.html', context)
 
 
-def summaryView(request, dieName, imageId):
+def adminSummaryView(request, dieName, imageId):
     """
     This administrative view displays a summary of all the entered information
     for a given Die and DieImage.  One can also do rudimentary changes to the
@@ -258,5 +258,5 @@ def summaryView(request, dieName, imageId):
                   'dieInfoArray': zip(populatedForms, submitterArray, submitTimeArray, range(len(submitTimeArray)))
               }
 
-    return render(request, 'typer/summaryView.html', context)
+    return render(request, 'typer/adminSummaryView.html', context)
 

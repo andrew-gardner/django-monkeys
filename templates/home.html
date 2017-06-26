@@ -12,7 +12,7 @@
       <a href="{% url 'typer:dieInstructions' die %}">instructions</a>
       {% if user.is_superuser %}
         &nbsp--&nbsp
-        <a href="{% url 'typer:summaryHome' die %}">[[results]]</a>
+        <a href="{% url 'typer:adminSummaryHome' die %}">[[results]]</a>
       {% endif %}
       </h3>
       <br>

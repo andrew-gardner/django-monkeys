@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Summary for {{die.name}}{% endblock %}
+{% block title %}Administrative summary for {{die.name}}{% endblock %}
 
 {% block content %}
   {% if user.is_superuser %}
@@ -47,6 +47,6 @@
     </tr>
     </table>
   {% else %}
-    <h2>You must be a super user to see this submission summary page.</h2>
+    <h2>You must be a super user to see this administrative submission summary page.</h2>
   {% endif %}
 {% endblock %}

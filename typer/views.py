@@ -147,6 +147,7 @@ def dieUserStatisticsView(request, dieName):
                 perfectMatchCount += 1 if (userTypedField.typedField == field.typedField) else 0
                 typedFieldCount += 1
 
+        # Construct a interesting message
         if typedFieldCount > 0:
             if perfectMatchCount == typedFieldCount:
                 messages.append("Your data matches the data everyone else typed for this image")

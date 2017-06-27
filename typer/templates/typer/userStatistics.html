@@ -4,9 +4,10 @@
 
 {% block content %}
   {% if user.is_authenticated %}
-    <h2>Statistics for user {{user.username}} entering data for die : <i>{{die.name}}</i></h2>
-    You have typed {{typedCount}} fields for this die.<br />
-    This is {{typedPercent}}% of the total number of images for this die.<br />
+    <h2>Statistics for user {{ user.username }} entering data for die : <i>{{ die.name }}</i></h2>
+    You have typed {{ typedCount }} fields for this die.<br />
+    This is {{ typedPercent }}% of the total number of images for this die.<br />
+    You are ranked #{{ quantityRank }} in terms of number of images entered.<br />
     <br />
     <u>This is the work you have done:</u><br />
 
@@ -14,7 +15,7 @@
     {% for field, message in fieldsAndMessages %}
     <tr>
     <td valign="top">
-      Row {{ field.dieImage.cropRow }}, Column {{ field.dieImage.cropCol }}<br />
+      Column {{ field.dieImage.cropCol }}, Row {{ field.dieImage.cropRow }}<br />
       {% load static %}
       <img src="{% static field.dieImage.image.url %}"><br />
     </td>

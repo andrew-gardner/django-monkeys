@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.models import User
 from django.contrib.staticfiles.templatetags import staticfiles
 from .models import Die, DieImage, TypedDie
 from .forms import MonkeyTyperForm
@@ -131,13 +132,25 @@ def dieUserStatisticsView(request, dieName):
     """
     """
     dieObject = Die.objects.filter(name=dieName)[0]
-
-    # Display
-    allImagesForDie = DieImage.objects.filter(Q(die=dieObject))
     userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=request.user))
 
+    # How does this user's entry count compare to the others?
+    userEntryTupleList = list()
+    for user in User.objects.all():
+        if user == request.user:
+            continue
+        otherUserTypedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=user))
+        userEntryTupleList.append((user, len(otherUserTypedFields)))
+    sortedByEntry = [x for (y,x) in sorted(userEntryTupleList, key=lambda pair: pair[1], reverse=True)]
+    quantityRank = len(sortedByEntry)
+    for i in range(len(sortedByEntry)):
+        if len(userTypedTheseFields) > sortedByEntry[i]:
+            quantityRank = i
+            break
+    quantityRank += 1
+
     # For each field the user typed, compare against other users' results
-    messages = list()
+    comparisonMessages = list()
     for userTypedField in userTypedTheseFields:
         typedFieldCount = 0
         perfectMatchCount = 0
@@ -146,27 +159,27 @@ def dieUserStatisticsView(request, dieName):
             if field.completed():
                 perfectMatchCount += 1 if (userTypedField.typedField == field.typedField) else 0
                 typedFieldCount += 1
-
         # Construct a interesting message
         if typedFieldCount > 0:
             if perfectMatchCount == typedFieldCount:
-                messages.append("Your data matches the data everyone else typed for this image")
+                comparisonMessages.append("Your data matches the data everyone else typed for this image")
             elif perfectMatchCount != typedFieldCount:
                 matchPercent = (float(perfectMatchCount) / float(typedFieldCount)) * 100.0
-                messages.append("Your data conflicts with what others typed.\nYou agree with %.0f%% of the others." % (matchPercent))
+                comparisonMessages.append("Your data conflicts with what others typed.\nYou agree with %.0f%% of the others." % (matchPercent))
         else:
-            messages.append("You are the only one to type data for this die so far")
+            comparisonMessages.append("You are the only one to type data for this die so far")
 
     # TODO: Low importance fix - if you're an admin and you 'typed the same die twice' this number is wrong
+    allImagesForDie = DieImage.objects.filter(Q(die=dieObject))
     typedPercent = round(float(len(userTypedTheseFields)) / float(len(allImagesForDie)) * 100.0, 2)
     context = {
                   'die' : dieObject,
                   'typedCount' : len(userTypedTheseFields),
                   'typedPercent' : typedPercent,
-                  'fieldsAndMessages' : zip(userTypedTheseFields, messages)
+                  'quantityRank' : quantityRank,
+                  'fieldsAndMessages' : zip(userTypedTheseFields, comparisonMessages)
               }
     return render(request, 'typer/userStatistics.html', context)
-
 
 
 def dieInstructionsView(request, dieName):

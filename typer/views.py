@@ -133,18 +133,36 @@ def dieUserStatisticsView(request, dieName):
     dieObject = Die.objects.filter(name=dieName)[0]
 
     # Display
-    allFieldsForDie = DieImage.objects.filter(Q(die=dieObject))
+    allImagesForDie = DieImage.objects.filter(Q(die=dieObject))
     userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=request.user))
 
-    # TODO: Compare user's typed data with that of the others & post information about that
+    # For each field the user typed, compare against other users' results
+    messages = list()
+    for userTypedField in userTypedTheseFields:
+        typedFieldCount = 0
+        perfectMatchCount = 0
+        allFieldsRelatedToUserTypedField = TypedDie.objects.filter(Q(dieImage=userTypedField.dieImage) & ~Q(submitter=request.user))
+        for field in allFieldsRelatedToUserTypedField:
+            if field.completed():
+                perfectMatchCount += 1 if (userTypedField.typedField == field.typedField) else 0
+                typedFieldCount += 1
+
+        if typedFieldCount > 0:
+            if perfectMatchCount == typedFieldCount:
+                messages.append("Your data matches the data everyone else typed for this image")
+            elif perfectMatchCount != typedFieldCount:
+                matchPercent = (float(perfectMatchCount) / float(typedFieldCount)) * 100.0
+                messages.append("Your data conflicts with what others typed.\nYou agree with %.0f%% of the others." % (matchPercent))
+        else:
+            messages.append("You are the only one to type data for this die so far")
 
     # TODO: Low importance fix - if you're an admin and you 'typed the same die twice' this number is wrong
-    typedPercent = round(float(len(userTypedTheseFields)) / float(len(allFieldsForDie)) * 100.0, 2)
+    typedPercent = round(float(len(userTypedTheseFields)) / float(len(allImagesForDie)) * 100.0, 2)
     context = {
                   'die' : dieObject,
-                  'fields' : userTypedTheseFields,
                   'typedCount' : len(userTypedTheseFields),
-                  'typedPercent' : typedPercent
+                  'typedPercent' : typedPercent,
+                  'fieldsAndMessages' : zip(userTypedTheseFields, messages)
               }
     return render(request, 'typer/userStatistics.html', context)
 

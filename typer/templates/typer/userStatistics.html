@@ -8,11 +8,11 @@
     You have typed {{typedCount}} fields for this die.<br />
     This is {{typedPercent}}% of the total number of images for this die.<br />
     <br />
-    This is the work you have done:<br />
-    <table cellspacing=10 cellpadding=10 border=0>
-    {% for field in fields %}
-    <tr>
+    <u>This is the work you have done:</u><br />
 
+    <table cellspacing=10 cellpadding=10 border=0>
+    {% for field, message in fieldsAndMessages %}
+    <tr>
     <td valign="top">
       Row {{ field.dieImage.cropRow }}, Column {{ field.dieImage.cropCol }}<br />
       {% load static %}
@@ -21,9 +21,10 @@
     <td valign="top">
       <code>{{ field.typedField | linebreaks }}</code>
     </td>
-
+    <td valign="center">
+      <code>{{ message | linebreaks }}</code>
+    </td>
     </tr>
-
     {% endfor %}
     </table>
 

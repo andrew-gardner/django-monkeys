@@ -14,7 +14,9 @@
       <a href="{% url 'typer:dieUserStatistics' die %}">statistics</a>
       {% if user.is_superuser %}
         &nbsp--&nbsp
-        <a href="{% url 'typer:adminSummaryHome' die %}">[[results]]</a>
+        <a href="{% url 'typer:adminSummaryHome' die %}">[[results</a>
+        &nbsp--&nbsp
+        <a href="{% url 'typer:adminStatistics' die %}">statistics]]</a>
       {% endif %}
       </h3>
       <br>

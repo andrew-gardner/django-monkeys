@@ -215,6 +215,23 @@ def dieInstructionsView(request, dieName):
     return render(request, 'typer/instructions.html', context)
 
 
+def adminStatisticsView(request, dieName):
+    """
+    """
+    dieObject = Die.objects.filter(name=dieName)[0]
+    allDieFields = TypedDie.objects.filter(Q(dieImage__die=dieObject))
+    typedFields = list()
+    for field in allDieFields:
+        if field.completed():
+            typedFields.append(field)
+
+    context = {
+                  'allFieldCount' : len(allDieFields),
+                  'allTypedCount' : len(typedFields)
+              }
+    return render(request, 'typer/adminStatistics.html', context)
+
+
 def adminSummaryHomeView(request, dieName):
     """
     An administrative view that displays a list of images and info about

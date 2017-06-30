@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrative statistics for {{die.name}}{% endblock %}
+
+{% block content %}
+  {% if user.is_superuser %}
+    <h2>Hello administrator - here are some statistics {{die.name}}</h2>
+    {{ allTypedCount }} of the {{ allFieldCount }} fields have been typed.<br /><br />
+
+    <b>Leaderboard :</b><br />
+
+  {% else %}
+    <h2>You must be a super user to see this administrative statistics page.</h2>
+  {% endif %}
+{% endblock %}

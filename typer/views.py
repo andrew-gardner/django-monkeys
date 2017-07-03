@@ -219,15 +219,24 @@ def adminStatisticsView(request, dieName):
     """
     """
     dieObject = Die.objects.filter(name=dieName)[0]
-    allDieFields = TypedDie.objects.filter(Q(dieImage__die=dieObject))
-    typedFields = list()
-    for field in allDieFields:
-        if field.completed():
-            typedFields.append(field)
+
+    # Get how many fields and how many have been typed
+    allFields = TypedDie.objects.filter(Q(dieImage__die=dieObject))
+    typedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & ~Q(typedField=""))
+
+    # Get a list of who's on first
+    scoreboard = list()
+    for user in User.objects.all():
+        userTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=user))
+        scoreboard.append( (user, len(userTyped)) )
+    sortedScores = sorted(scoreboard, key=lambda tup: tup[1], reverse=True)
+
+    print(sortedScores)
 
     context = {
-                  'allFieldCount' : len(allDieFields),
-                  'allTypedCount' : len(typedFields)
+                  'allFieldCount' : len(allFields),
+                  'allTypedCount' : len(typedFields),
+                  'scoreboard' : sortedScores
               }
     return render(request, 'typer/adminStatistics.html', context)
 

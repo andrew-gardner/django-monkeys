@@ -250,15 +250,16 @@ def adminSummaryHomeView(request, dieName):
     """
     dieObject = Die.objects.filter(name=dieName)[0]
     allAvailableDieImages = DieImage.objects.filter(Q(die=dieObject))
+    allApplicableTypedDies = TypedDie.objects.filter(Q(dieImage__die=dieObject))
 
     # Count all the entered fields for this die image (TODO: There must be a more Pythonic way to do this)
     totalFields = 0
     totalCompletedFields = 0
     dieIsCompleted = list()
     dieImageEntryCounts = list()
-    # TODO: This is very slow right now - a clever query should be able to get me the same info as this loop
+    # TODO: This is very slow right now - seems to be 2/3 python and 1/3 html - could be sped up with a Paginator
     for di in allAvailableDieImages:
-        typedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(dieImage__id=di.id))
+        typedFields = allApplicableTypedDies.filter(Q(dieImage=di))
         completedFieldCount = 0
         for tf in typedFields:
             if tf.completed():

@@ -7,7 +7,6 @@ class SiteSettings(models.Model):
     """
     introText = models.TextField('Intro Text', blank=True)
 
-
     def __str__(self):
         return ("Site settings:\nintroText:%s" % (self.introText))
 

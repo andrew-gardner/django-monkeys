@@ -4,14 +4,14 @@
 
 {% block content %}
   {% if user.is_superuser %}
-    <h2>Hello administrator - here are some statistics {{die.name}}</h2>
+    <h2>Hello administrator - here are some statistics for die : <i>{{die.name}}</i></h2>
     {{ allTypedCount }} of the {{ allFieldCount }} fields have been typed.<br /><br />
 
     <b>Leaderboard :</b><br />
     <table cellpadding=0 cellspacing=0 border=0 width=15%>
     {% for user, score in scoreboard %}
     <tr>
-      <td> {{ user }} </td>
+      <td><a href="{% url 'typer:dieSpecificUserStatistics' die.name user.username %}"> {{ user }} </a></td>
       <td> {{ score }} </td>
     </tr>
     {% endfor %}

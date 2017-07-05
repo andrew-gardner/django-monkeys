@@ -38,7 +38,7 @@ def indexView(request, dieName):
         # A simple message for users who have typed all there is to type
         # TODO: Make this more interesting
         if len(allAvailableFields) == 0:
-            return HttpResponse("All fields have been typed for this die")
+            return HttpResponse("<html><body>All fields have been typed for this die</body></html>")
 
         # Choose a random field to display
         randomField = random.randint(0, len(allAvailableFields)-1)
@@ -128,16 +128,15 @@ def imageInput(request, fieldId, error=None, fieldData=None):
     return render(request, 'typer/imageInput.html', context)
 
 
-def dieUserStatisticsView(request, dieName):
+def dieUserStatistics(request, dieObject, activeUser):
     """
     """
-    dieObject = Die.objects.filter(name=dieName)[0]
-    userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=request.user))
+    userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=activeUser))
 
     # How does this user's entry count compare to the others?
     userEntryTupleList = list()
     for user in User.objects.all():
-        if user == request.user:
+        if user == activeUser:
             continue
         otherUserTypedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=user))
         userEntryTupleList.append((user, len(otherUserTypedFields)))
@@ -154,7 +153,7 @@ def dieUserStatisticsView(request, dieName):
     for userTypedField in userTypedTheseFields:
         typedFieldCount = 0
         perfectMatchCount = 0
-        allFieldsRelatedToUserTypedField = TypedDie.objects.filter(Q(dieImage=userTypedField.dieImage) & ~Q(submitter=request.user))
+        allFieldsRelatedToUserTypedField = TypedDie.objects.filter(Q(dieImage=userTypedField.dieImage) & ~Q(submitter=activeUser))
         for field in allFieldsRelatedToUserTypedField:
             if field.completed():
                 perfectMatchCount += 1 if (userTypedField.typedField == field.typedField) else 0
@@ -174,12 +173,38 @@ def dieUserStatisticsView(request, dieName):
     typedPercent = round(float(len(userTypedTheseFields)) / float(len(allImagesForDie)) * 100.0, 2)
     context = {
                   'die' : dieObject,
+                  'activeUser' : activeUser,
                   'typedCount' : len(userTypedTheseFields),
                   'typedPercent' : typedPercent,
                   'quantityRank' : quantityRank,
                   'fieldsAndMessages' : zip(userTypedTheseFields, comparisonMessages)
               }
     return render(request, 'typer/userStatistics.html', context)
+
+
+def dieUserStatisticsView(request, dieName):
+    """
+    A view that shows some interesting statistics for the logged-in user.
+    """
+    dieObject = Die.objects.filter(name=dieName)[0]
+    return dieUserStatistics(request, dieObject, request.user)
+
+
+def dieSpecificUserStatisticsView(request, dieName, userName):
+    """
+    A view that shows interesting statistics for the user specified in the url.
+    """
+    if not request.user.is_staff:
+        return HttpResponse("<html><body>Only administrators can access user statistics directly</body></html>")
+
+    dieObject = Die.objects.filter(name=dieName)[0]
+    specifiedUser = None
+    for user in User.objects.all():
+        if userName == user.username:
+            specifiedUser = user
+    if specifiedUser is None:
+        return HttpResponse("<html><body>The user %s does not exist.</body></html>" % userName)
+    return dieUserStatistics(request, dieObject, specifiedUser)
 
 
 def dieInstructionsView(request, dieName):
@@ -231,9 +256,8 @@ def adminStatisticsView(request, dieName):
         scoreboard.append( (user, len(userTyped)) )
     sortedScores = sorted(scoreboard, key=lambda tup: tup[1], reverse=True)
 
-    print(sortedScores)
-
     context = {
+                  'die' : dieObject,
                   'allFieldCount' : len(allFields),
                   'allTypedCount' : len(typedFields),
                   'scoreboard' : sortedScores

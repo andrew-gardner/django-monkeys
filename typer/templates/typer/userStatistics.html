@@ -3,8 +3,8 @@
 {% block title %}Statistics for {{die.name}}{% endblock %}
 
 {% block content %}
-  {% if activeUser.is_authenticated %}
-    <h2>Statistics for user {{ activeUser.username }} entering data for die : <i>{{ die.name }}</i></h2>
+  {% if user.is_authenticated %}
+    <h2>Statistics for user {{ specifiedUser.username }} entering data for die : <i>{{ die.name }}</i></h2>
     You have typed {{ typedCount }} fields for this die.<br />
     This is {{ typedPercent }}% of the total number of images for this die.<br />
     You are ranked #{{ quantityRank }} in terms of number of images entered.<br />

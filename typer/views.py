@@ -128,15 +128,31 @@ def imageInput(request, fieldId, error=None, fieldData=None):
     return render(request, 'typer/imageInput.html', context)
 
 
-def dieUserStatistics(request, dieObject, activeUser):
+def dieSpecificUserStatisticsView(request, dieName, userName):
     """
+    A view that shows interesting statistics for the user specified in the url.
     """
-    userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=activeUser))
+
+    # If the given username isn't the logged-in user, see if it's staff.  If not, go no further.
+    if userName != request.user.username and not request.user.is_staff:
+        return HttpResponse("<html><body>Only administrators can access user statistics directly</body></html>")
+
+    # Get the User object from the username
+    dieObject = Die.objects.filter(name=dieName)[0]
+    specifiedUser = None
+    for user in User.objects.all():
+        if userName == user.username:
+            specifiedUser = user
+    if specifiedUser is None:
+        return HttpResponse("<html><body>The user %s does not exist.</body></html>" % userName)
+
+    # Carry on
+    userTypedTheseFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=specifiedUser))
 
     # How does this user's entry count compare to the others?
     userEntryTupleList = list()
     for user in User.objects.all():
-        if user == activeUser:
+        if user == specifiedUser:
             continue
         otherUserTypedFields = TypedDie.objects.filter(Q(dieImage__die=dieObject) & Q(submitter=user))
         userEntryTupleList.append((user, len(otherUserTypedFields)))
@@ -153,7 +169,7 @@ def dieUserStatistics(request, dieObject, activeUser):
     for userTypedField in userTypedTheseFields:
         typedFieldCount = 0
         perfectMatchCount = 0
-        allFieldsRelatedToUserTypedField = TypedDie.objects.filter(Q(dieImage=userTypedField.dieImage) & ~Q(submitter=activeUser))
+        allFieldsRelatedToUserTypedField = TypedDie.objects.filter(Q(dieImage=userTypedField.dieImage) & ~Q(submitter=specifiedUser))
         for field in allFieldsRelatedToUserTypedField:
             if field.completed():
                 perfectMatchCount += 1 if (userTypedField.typedField == field.typedField) else 0
@@ -173,38 +189,13 @@ def dieUserStatistics(request, dieObject, activeUser):
     typedPercent = round(float(len(userTypedTheseFields)) / float(len(allImagesForDie)) * 100.0, 2)
     context = {
                   'die' : dieObject,
-                  'activeUser' : activeUser,
                   'typedCount' : len(userTypedTheseFields),
                   'typedPercent' : typedPercent,
                   'quantityRank' : quantityRank,
+                  'specifiedUser' : specifiedUser,
                   'fieldsAndMessages' : zip(userTypedTheseFields, comparisonMessages)
               }
     return render(request, 'typer/userStatistics.html', context)
-
-
-def dieUserStatisticsView(request, dieName):
-    """
-    A view that shows some interesting statistics for the logged-in user.
-    """
-    dieObject = Die.objects.filter(name=dieName)[0]
-    return dieUserStatistics(request, dieObject, request.user)
-
-
-def dieSpecificUserStatisticsView(request, dieName, userName):
-    """
-    A view that shows interesting statistics for the user specified in the url.
-    """
-    if not request.user.is_staff:
-        return HttpResponse("<html><body>Only administrators can access user statistics directly</body></html>")
-
-    dieObject = Die.objects.filter(name=dieName)[0]
-    specifiedUser = None
-    for user in User.objects.all():
-        if userName == user.username:
-            specifiedUser = user
-    if specifiedUser is None:
-        return HttpResponse("<html><body>The user %s does not exist.</body></html>" % userName)
-    return dieUserStatistics(request, dieObject, specifiedUser)
 
 
 def dieInstructionsView(request, dieName):

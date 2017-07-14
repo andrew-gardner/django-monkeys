@@ -182,9 +182,9 @@ def dieSpecificUserStatisticsView(request, dieName, userName):
                 matchPercent = (float(perfectMatchCount) / float(typedFieldCount)) * 100.0
                 comparisonMessages.append("Your data conflicts with what others typed.\nYou agree with %.0f%% of the others." % (matchPercent))
         else:
-            comparisonMessages.append("You are the only one to type data for this die so far")
+            comparisonMessages.append("You are the only one to type data for this image so far")
 
-    # TODO: Low importance fix - if you're an admin and you 'typed the same die twice' this number is wrong
+    # TODO: Low importance fix - if you're an admin and you 'typed the same image twice' this number is wrong
     allImagesForDie = DieImage.objects.filter(Q(die=dieObject))
     typedPercent = round(float(len(userTypedTheseFields)) / float(len(allImagesForDie)) * 100.0, 2)
     context = {

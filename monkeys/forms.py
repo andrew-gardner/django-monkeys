@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from registration.forms import RegistrationForm
 
@@ -8,6 +10,16 @@ class EmailFreeRegistrationForm(RegistrationForm):
     a new user.
     """
     email = forms.EmailField(required=False)
+
+    def clean_username(self):
+        """
+        Insure the username doesn't have any characters we don't want in it.
+        """
+        username = self.cleaned_data.get('username', '')
+        badness = re.findall(r'[^a-zA-Z0-9\._@\-]', username)
+        if len(badness):
+            raise forms.ValidationError('Please keep user names to alphanumeric characters and the characters [. - _ @] only.')
+        return username
 
 
 class ContactForm(forms.Form):

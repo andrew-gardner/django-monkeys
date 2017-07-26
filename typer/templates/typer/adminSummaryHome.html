@@ -7,10 +7,11 @@
     <h2>Hello administrator - these are the images available for {{die.name}}</h2>
     {{ completedPercent }}% of the total number of fields have been typed.<br /><br />
     {% for dieImage, entryCount, isComplete in dieImageInfo %}
-      </a>({{entryCount}})&nbsp<a href="{% url 'typer:adminSummaryView' die.name dieImage.id %}">{{dieImage}}<br />
+      </a>({{entryCount}})&nbsp<a href="{% url 'typer:adminSummaryView' die.name dieImage.id %}">{{dieImage}}
       {% if isComplete %}
         &nbsp*&nbspcomplete
       {% endif %}
+      <br />
     {% endfor %}
   {% else %}
     <h2>You must be a super user to see this administrative submission summary page.</h2>

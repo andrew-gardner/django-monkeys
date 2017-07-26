@@ -38,7 +38,7 @@ def indexView(request, dieName):
         # A simple message for users who have typed all there is to type
         # TODO: Make this more interesting
         if len(allAvailableFields) == 0:
-            return HttpResponse("<html><body>All fields have been typed for this die</body></html>")
+            return HttpResponse("<html><body>All fields have been typed for this die. Check back later to see if there are other dies to type.</body></html>")
 
         # Choose a random field to display
         randomField = random.randint(0, len(allAvailableFields)-1)

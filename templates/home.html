@@ -6,8 +6,9 @@
   {% if user.is_authenticated %}
     <h2>Greetings {{ user.username }}!<br></h2>
     Please choose from one of the following dies to work on...<br>
+    <h3>
     {% for die in dieList %}
-      <h3><a href="{% url 'typer:index' die %}">{{die}}</a>
+      <a href="{% url 'typer:index' die %}">{{die}}</a>
       &nbsp--&nbsp
       <a href="{% url 'typer:dieInstructions' die %}">instructions</a>
       &nbsp--&nbsp
@@ -18,9 +19,9 @@
         &nbsp--&nbsp
         <a href="{% url 'typer:adminStatistics' die %}">statistics]]</a>
       {% endif %}
-      </h3>
-      <br>
+      <br />
     {% endfor %}
+  </h3>
   {% else %}
     <h3>
     {{ introText | safe }}<br />

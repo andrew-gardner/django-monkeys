@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Monkey Home{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <h2>Greetings {{ user.username }}!<br /></h2>
+    {% if error %}
+      <b>{{ error }}</b><br /><br />
+    {% endif %}
+    Your profile settings can be changed here:<br />
+    <form action="" method="post">
+    {% csrf_token %}
+    E-mail address : <input id="emailField" type="text" name="EmailField" value="{{ user.email }}"><br /><br />
+    <input type="submit" name="saveButton" value="Save Changes" />
+    </form>
+  {% else %}
+    <h3>
+    Please either <a href="{% url 'login' %}">login</a> or <a href="{% url 'register' %}">register</a> for an account before editing your profile.
+    </h3>
+  {% endif %}
+{% endblock %}

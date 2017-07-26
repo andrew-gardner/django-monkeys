@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
 from django.views.generic.base import TemplateView
-from .views import homeView, contactView
+from .views import homeView, contactView, profileView
 
 # Because we overrode the need for the e-mail to be filled out when registering
 from .forms import EmailFreeRegistrationForm
@@ -18,4 +18,5 @@ urlpatterns = [
     url(r'^logout/$', auth_views.logout, {'template_name': 'logged_out.html'}, name='logout'),
     url(r'^accounts/', RegistrationView.as_view(form_class=EmailFreeRegistrationForm), name='register'),
     url(r'^contact/', contactView, name='contact'),
+    url(r'^profile/', profileView, name='profile'),
 ]

@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from typer.models import Die, SiteSettings
 from .forms import ContactForm
 
@@ -56,3 +58,27 @@ def contactView(request):
                   'submitSuccess' : submitSuccess
               }
     return render(request, 'contact.html', context)
+
+
+def profileView(request):
+    """
+    A view that lets the user edit their profile settings.
+    """
+    errorMessage = ""
+
+    # Set the new e-mail address if a post is requested
+    if request.method == 'POST':
+        newEmail = request.POST['EmailField']
+        try:
+            validate_email(newEmail)
+            request.user.email = newEmail
+            request.user.save()
+        except ValidationError:
+            errorMessage = "Please enter a valid e-mail address"
+
+    print(errorMessage)
+
+    context = {
+                  'error': errorMessage,
+              }
+    return render(request, 'profile.html', context)

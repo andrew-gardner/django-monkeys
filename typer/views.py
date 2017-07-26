@@ -243,7 +243,7 @@ def adminStatisticsView(request, dieName):
     # Get a list of who's on first
     scoreboard = list()
     for user in User.objects.all():
-        userTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=user))
+        userTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=user) & Q(dieImage__die=dieObject))
         scoreboard.append( (user, len(userTyped)) )
     sortedScores = sorted(scoreboard, key=lambda tup: tup[1], reverse=True)
 

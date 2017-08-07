@@ -36,7 +36,7 @@ def indexView(request, dieName):
 
         thingsUserHasTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=request.user) & Q(dieImage__die=dieObject))
         setTyped = [td.dieImage_id for td in thingsUserHasTyped]
-        usableFields = filter(lambda x: x.dieImage_id not in setTyped, allAvailableFields)
+        usableFields = list(filter(lambda x: x.dieImage_id not in setTyped, allAvailableFields))
         #print 'avail', len(allAvailableFields)
         #print 'typed', len(setTyped)
         #print 'usable', len(usableFields)

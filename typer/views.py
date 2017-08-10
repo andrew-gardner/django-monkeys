@@ -21,6 +21,11 @@ def indexView(request, dieName):
     This view displays a randomly choosen DieImage for a given Die.  Secret
     data about which die has been randomly chosen passes through to the POST
     method since this view decides it dynamically.
+
+    Note:
+    allAvailableFields = allAvailableFields.exclude(Q(dieImage=tuht.dieImage))
+    Resulted in large AND NOT query after adding many entries
+    Instead two separate queries and subtract out manually
     """
     userIsStaff = request.user.is_staff
 
@@ -29,20 +34,19 @@ def indexView(request, dieName):
         dieObject = Die.objects.filter(name=dieName)[0]
         allAvailableFields = TypedDie.objects.filter(Q(typedField="") & Q(dieImage__die=dieObject))
 
-        # Filter so that the same user never sees the same image twice eg. (submitter != self)
-        if not userIsStaff:
-            thingsUserHasTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=request.user))
-            for tuht in thingsUserHasTyped:
-                allAvailableFields = allAvailableFields.exclude(Q(dieImage=tuht.dieImage))
+        thingsUserHasTyped = TypedDie.objects.filter(~Q(typedField="") & Q(submitter=request.user) & Q(dieImage__die=dieObject))
+        setTyped = [td.dieImage_id for td in thingsUserHasTyped]
+        usableFields = filter(lambda x: x.dieImage_id not in setTyped, allAvailableFields)
+        #print 'avail', len(allAvailableFields)
+        #print 'typed', len(setTyped)
+        #print 'usable', len(usableFields)
 
-        # A simple message for users who have typed all there is to type
-        # TODO: Make this more interesting
-        if len(allAvailableFields) == 0:
+        if not usableFields:
             return HttpResponse("<html><body>All fields have been typed for this die. Check back later to see if there are other dies to type.</body></html>")
 
         # Choose a random field to display
-        randomField = random.randint(0, len(allAvailableFields)-1)
-        randomId = allAvailableFields[randomField].id
+        randomField = random.randint(0, len(usableFields)-1)
+        randomId = usableFields[randomField].id
 
         # Display the random page
         return imageInput(request, randomId)

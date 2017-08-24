@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}Typing {{die.name}}{% endblock %}
+{% block script %}
+<script > 
+function ButtonClick_AllZeros()
+  {document.getElementById("id_typedField").value= '00000000\n00000000\n00000000\n00000000\n00000000\n00000000\n00000000\n00000000';}   
+function ButtonClick_AllOnes()
+  {document.getElementById("id_typedField").value= '11111111\n11111111\n11111111\n11111111\n11111111\n11111111\n11111111\n11111111';}
+</script>
+{% endblock %}
 
 {% block content %}
   {% if user.is_authenticated %}
@@ -22,6 +30,9 @@
       <td valign="top">
       {{form.typedField}}<br>
       <input type="submit" name="submitButton" value="Submit" />
+      &nbsp&nbsp
+      <input type="button" value="All Zeros" name="allZeros" onclick="ButtonClick_AllZeros()">
+      <input type="button" value="All Ones" name="allOnes" onclick="ButtonClick_AllOnes()">
       </td>
       {# Pass some hidden information on to the POST - must be in the form tag #}
       <input type="hidden" name="dieField" value="{{typedDie.id}}" />

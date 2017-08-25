@@ -2,7 +2,7 @@
 
 {% block title %}Typing {{die.name}}{% endblock %}
 {% block script %}
-<script > 
+<script> 
 function ButtonClick_AllZeros()
   {document.getElementById("id_typedField").value= '00000000\n00000000\n00000000\n00000000\n00000000\n00000000\n00000000\n00000000';}   
 function ButtonClick_AllOnes()
@@ -32,6 +32,7 @@ function ButtonClick_AllOnes()
       <input type="submit" name="submitButton" value="Submit" />
       &nbsp&nbsp
       <input type="button" value="All Zeros" name="allZeros" onclick="ButtonClick_AllZeros()">
+      &nbsp
       <input type="button" value="All Ones" name="allOnes" onclick="ButtonClick_AllOnes()">
       </td>
       {# Pass some hidden information on to the POST - must be in the form tag #}

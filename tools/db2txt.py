@@ -1,13 +1,13 @@
+#!/usr/bin/env python
+
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__) + '/..')
 
-import django
-import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "monkeys.settings")
 import django
 django.setup()
-from typer.models import Die, DieImage, TypedDie
+from typer.models import TypedDie
 
 import argparse
 import ast
@@ -168,67 +168,28 @@ def romwf(rom, gcol, grow, fieldm, feedback):
             romw(rom, abscol + fcol, absrow + frow, bit)
 
 def romw(rom, col, row, v):
+    '''Write ROM state'''
     if col >= 32 * 8 or row >= 32 * 8:
-        print col, row
-        raise ValueError()
+        raise ValueError('%s, %s' % (col, row))
     rom[row * 32 * 8 + col] = v
 
 def romr(rom, col, row):
+    '''Read ROM state'''
     if col >= 32 * 8 or row >= 32 * 8:
-        print col, row
-        raise ValueError()
+        raise ValueError('%s, %s' % (col, row))
 
     try:
         return rom[row * 32 * 8 + col]
     except:
-        print col, row
+        print('%s, %s' % (col, row))
         raise
 
-'''
-http://siliconpr0n.org/.../mz_rom_mit20x_xpol/
-last bit lower left
-leftmost column read out first
-Within each group of 8 bits, one is read out at a time across the entire column
-Then the next bit in the column is read
-
-so note that column numbering is basically inverted vs our images
-Also the bit polarity is inverted
-
-so to read out last four bytes
-Most significant bits of each byte towards top of die
-bottom bit of the topmost column byte then forms the MSB of the first byte
-then move one byte down
-Take the same bit position for the next significnt bit    
-'''
-def layout_bin2img(rom):
-    romb = bytearray(8192)
-    for i in xrange(8192):
-        for j in xrange(8):
-            biti = i * 8 + j
-            # Each column has 16 bytes
-            # Actually starts from right of image
-            col = (32 * 8 - 1) - biti / (8 * 32)
-            # 0, 8, 16, ... 239, 247, 255
-            row = (biti % 32) * 8 + (biti / 32) % 8
-            try:
-                bit = romr(rom, col, row)
-            except:
-                print i, j, biti, col, row
-                raise
-            if bit is None:
-                print i, j
-                raise ValueError()
-            #if biti > 8192 * 8 - 32:
-            #    print i, j, biti, col, row, bit
-            romb[i] |= (1 ^ bit) << j
-        #if biti > 8192 * 8 - 32:
-        #    print 'romb[0x%02X] = 0x%02X' % (i, romb[i])
-    return romb
-
 def isimg(td, img_want):
+    '''Is this for the image we are working on?'''
     return str(td.dieImage.image).find(img_want) == 0
 
 def get_dist(img_want):
+    '''Get typed bits distribution per task'''
     dist = {}
     matches = 0
     for tdi, td in enumerate(TypedDie.objects.all()):
@@ -267,6 +228,7 @@ def get_dist(img_want):
     return dist
 
 def im_roi(icol, irow):
+    '''Get an ROI for just one bit in a task image'''
     if icol >= 8 or irow >= 8:
         raise ValueError()
 
@@ -278,6 +240,23 @@ def im_roi(icol, irow):
     #return im_full.crop(crop)
     return crop
 
+def save_txt(rom, f):
+    '''Save ROM state to file as .txt representing image layout'''
+    # FIXME: generate these
+    cols = 32 * 8
+    rows = 32 * 8
+
+    ret = ''
+    for row in xrange(rows):
+        for col in xrange(cols):
+            if col % 8 == 0 and col:
+                f.write(' ')
+            f.write(str(romr(rom, col, row)))
+        f.write('\n')
+        if row % 8 == 0 and row:
+            f.write('\n')
+    return ret
+
 def run(img_name, feedback=None, fn_out=None):
     if not feedback:
         feedback = {}
@@ -286,6 +265,7 @@ def run(img_name, feedback=None, fn_out=None):
     print 'Assemble test'
     # 32 x 32, 8 x 8
     # row major order
+    # Contains only 0/1 as integers
     rom = [None] * 8192 * 8
 
     print 'Querying...'
@@ -337,13 +317,10 @@ def run(img_name, feedback=None, fn_out=None):
 
         raise Exception("Resolve warnings before continuing")
 
-    print 'Assembling'
-    romb = layout_bin2img(rom)
-
-    print 'Writing'
     if not fn_out:
-        fn_out = '%s_cs.bin' % img_name
-    open(fn_out, 'w').write(romb)
+        fn_out = '%s_cs.txt' % img_name
+    print 'Writing %s' % fn_out
+    save_txt(rom, open(fn_out, 'w'))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract ROM .bin from monkey DB')
@@ -357,4 +334,3 @@ if __name__ == '__main__':
     if args.cf:
         feedback = ast.literal_eval(open(args.cf, 'r').read())
     run(img_name=args.image, feedback=feedback, fn_out=args.fn_out)
-

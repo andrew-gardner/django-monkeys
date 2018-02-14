@@ -9,16 +9,23 @@ import re
 import sys
 from PIL import Image
 
-IMG = 'sega_315-5572'
+IMG=None
 USER = None
+
+#IMG = 'sega_315-5678_xpol'
 #USER = 'brizzo'
 #USER = 'sparkyman215'
-
+#USER='leniad'
+#USER='Master_E'
+USER='*'
+USER = 'cwmaguire'
 
 def thesub(td):
-    return not USER or str(td.submitter) == USER
+    return not USER or USER == '*' or str(td.submitter) == USER
 
 def thedie(td):
+    if IMG is None:
+        return True
     k = str(td.dieImage.image)
     #print k
     return k.find(IMG) == 0
@@ -45,5 +52,14 @@ def sec2tstr(seconds):
     h, m = divmod(m, 60)
     return "%d:%02d:%02d" % (h, m, s)
 
+def active_users():
+    users = set()
+    for td in TypedDie.objects.all():
+        if not td.submitter:
+            continue
+        if not interesting(td):
+            continue
+        users.add(str(td.submitter))
+    return users
 
 

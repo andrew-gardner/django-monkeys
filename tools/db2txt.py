@@ -1,17 +1,18 @@
+#!/usr/bin/env python
+
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__) + '/..')
 
-import django
-import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "monkeys.settings")
 import django
 django.setup()
-from typer.models import Die, DieImage, TypedDie
+from typer.models import TypedDie
 
 import argparse
 import ast
 import re
+import json
 
 from PIL import Image, ImageDraw
 
@@ -20,8 +21,7 @@ Each are 8x8
 '''
 warnings = []
 warnings_field = {}
-def romwf(rom, gcol, grow, fieldm, feedback):
-    overrides = feedback
+def romwf(rom, gcol, grow, fieldm, overrides):
     absrow = grow * 8
     abscol = gcol * 8
     entries = sum(fieldm.values())
@@ -168,67 +168,31 @@ def romwf(rom, gcol, grow, fieldm, feedback):
             romw(rom, abscol + fcol, absrow + frow, bit)
 
 def romw(rom, col, row, v):
+    '''Write ROM state'''
     if col >= 32 * 8 or row >= 32 * 8:
-        print col, row
-        raise ValueError()
+        raise ValueError('%s, %s' % (col, row))
     rom[row * 32 * 8 + col] = v
 
 def romr(rom, col, row):
+    '''Read ROM state'''
     if col >= 32 * 8 or row >= 32 * 8:
-        print col, row
-        raise ValueError()
+        raise ValueError('%s, %s' % (col, row))
 
     try:
         return rom[row * 32 * 8 + col]
     except:
-        print col, row
+        print('%s, %s' % (col, row))
         raise
 
-'''
-http://siliconpr0n.org/.../mz_rom_mit20x_xpol/
-last bit lower left
-leftmost column read out first
-Within each group of 8 bits, one is read out at a time across the entire column
-Then the next bit in the column is read
-
-so note that column numbering is basically inverted vs our images
-Also the bit polarity is inverted
-
-so to read out last four bytes
-Most significant bits of each byte towards top of die
-bottom bit of the topmost column byte then forms the MSB of the first byte
-then move one byte down
-Take the same bit position for the next significnt bit    
-'''
-def layout_bin2img(rom):
-    romb = bytearray(8192)
-    for i in xrange(8192):
-        for j in xrange(8):
-            biti = i * 8 + j
-            # Each column has 16 bytes
-            # Actually starts from right of image
-            col = (32 * 8 - 1) - biti / (8 * 32)
-            # 0, 8, 16, ... 239, 247, 255
-            row = (biti % 32) * 8 + (biti / 32) % 8
-            try:
-                bit = romr(rom, col, row)
-            except:
-                print i, j, biti, col, row
-                raise
-            if bit is None:
-                print i, j
-                raise ValueError()
-            #if biti > 8192 * 8 - 32:
-            #    print i, j, biti, col, row, bit
-            romb[i] |= (1 ^ bit) << j
-        #if biti > 8192 * 8 - 32:
-        #    print 'romb[0x%02X] = 0x%02X' % (i, romb[i])
-    return romb
-
 def isimg(td, img_want):
+    '''Is this for the image we are working on?'''
     return str(td.dieImage.image).find(img_want) == 0
 
 def get_dist(img_want):
+    '''
+    Get typed bits distribution per field
+    Get a distribution for a position via ret[(gcol, grow)][(fcol, frow)]
+    '''
     dist = {}
     matches = 0
     for tdi, td in enumerate(TypedDie.objects.all()):
@@ -266,7 +230,21 @@ def get_dist(img_want):
         raise ValueError()
     return dist
 
+def dist_by_bits(dist):
+    '''Return a per bit instead of per solution dist'''
+    ret = {}
+    for solution, frequency in dist.iteritems():
+        fi = 0
+        for frow in xrange(8):
+            for fcol in xrange(8):
+                pos_freqs = ret.setdefault((fcol, frow), {})
+                bitchar = solution[fi]
+                pos_freqs[bitchar] = pos_freqs.setdefault(bitchar, 0) + frequency
+                fi += 1
+    return ret
+
 def im_roi(icol, irow):
+    '''Get an ROI for just one bit in a task image'''
     if icol >= 8 or irow >= 8:
         raise ValueError()
 
@@ -278,22 +256,131 @@ def im_roi(icol, irow):
     #return im_full.crop(crop)
     return crop
 
-def run(img_name, feedback=None, fn_out=None):
-    if not feedback:
-        feedback = {}
+def save_txt(rom, f):
+    '''Save ROM state to file as .txt representing image layout'''
+    # FIXME: generate these
+    cols = 32 * 8
+    rows = 32 * 8
+
+    ret = ''
+    for row in xrange(rows):
+        for col in xrange(cols):
+            if col % 8 == 0 and col:
+                f.write(' ')
+            f.write(str(romr(rom, col, row)))
+        f.write('\n')
+        if row % 8 == 0 and row:
+            f.write('\n')
+    return ret
+
+# XXX: too many open files without ulimit
+# maybe change to gen_images
+# Load images
+load_images_cache = {}
+def load_images(img_name, toload):
+    for (gcol, grow) in toload:
+        load_images_cache[(gcol, grow)] = get_image(img_name, gcol, grow)
+    return load_images_cache
+
+def get_image(img_name, gcol, grow):
+    fn = 'static/%s/%s_%02d_%02d.png' % (img_name, img_name, gcol, grow)
+    return Image.open(fn)
+
+def gen_warning_images(out_dir, img_name):
+    print 'Generating warning images'
+    images = load_images(img_name, warnings)
+
+    # Mask
+    #print images.keys()
+    #print warnings_field.keys()
+    for (gcol, grow), field in warnings_field.iteritems():
+        im = images[(gcol, grow)]
+        d = ImageDraw.Draw(im)
+        for frow in xrange(8):
+            for fcol in xrange(8):
+                c = field[frow * 8 + fcol]
+                if c not in '01':
+                    roi = im_roi(fcol, frow)
+                    d.rectangle(roi, fill=None, outline=(0xFF, 0xFF, 0))
+
+    # Save
+    for (gcol, grow), im in images.iteritems():
+        im.save(os.path.join(out_dir, '%02d_%02d_m.png' % (gcol, grow)))
+
+def gen_cv_images(meta_dir, img_name, dist, rom):
+    print 'Generating CV images'
+    #images = load_images(img_name, dist)
+
+    meta_bits = {}
+    for (gcol, grow), field in dist.iteritems():
+        field_bits = dist_by_bits(field)
+        #im = images[(gcol, grow)]
+        im = get_image(img_name, gcol, grow)
+        for frow in xrange(8):
+            arow = grow * 8 + frow
+            for fcol in xrange(8):
+                acol = gcol * 8 + fcol
+                roi = im_roi(fcol, frow)
+                if meta_dir:
+                    bitfn = "%02dgc-%02dgr_%02dfc-%02dfr.png" % (gcol, grow, fcol, frow)
+                    meta_bit = {
+                        # Global absolute coordinates
+                        'col': acol,
+                        'row': arow,
+                        # Global tile coordinates
+                        'gcol': gcol,
+                        'grow': grow,
+                        # Field (within a tile) coordinates
+                        'frow': frow,
+                        'fcol': fcol,
+                        # Answer frequency distribution like
+                        # {'0': 3, '1': 1, '?': 1}
+                        "dist": field_bits[(fcol, frow)],
+                        "best": romr(rom, acol, arow),
+                        }
+                    #print meta_bit
+                    imc = im.crop(roi)
+                    imc.save(os.path.join(meta_dir, "bit", bitfn))
+                    imc.close()
+                    meta_bits[bitfn] = meta_bit
+        im.close()
+    return meta_bits
+
+def run(img_name, overrides=None, fn_out=None, meta_dir=None):
+    if not overrides:
+        overrides = {}
 
     # Reassemble the ROM
     print 'Assemble test'
     # 32 x 32, 8 x 8
     # row major order
+    # Contains only 0/1 as integers
     rom = [None] * 8192 * 8
 
     print 'Querying...'
     dist = get_dist(img_name)
     print ' done'
 
+    if meta_dir:
+        if not os.path.exists(meta_dir):
+            os.mkdir(meta_dir)
+        if not os.path.exists(meta_dir + '/bit'):
+            os.mkdir(meta_dir + '/bit')
+    meta = {
+        "meta": {
+            "source": "django-monkeys/db2txt",
+            "override": str(overrides),
+            "img": img_name,
+        },
+        #"bit": meta_bits
+    }
+
     for (col, row), fields in sorted(dist.iteritems()):
-        romwf(rom, col, row, fields, feedback=feedback)
+        romwf(rom, col, row, fields, overrides=overrides)
+
+    # warning images trashes, run first
+    if meta_dir:
+        meta['bit'] = gen_cv_images(meta_dir, img_name, dist, rom)
 
     if warnings:
         print 'Warning template (%d)' % len(warnings)
@@ -309,52 +396,29 @@ def run(img_name, feedback=None, fn_out=None):
         out_dir = 'db2bin/%s' % img_name
         os.path.exists(out_dir) or os.mkdir(out_dir)
 
-        def gen_images():
-            # Load images
-            images = {}
-            for (gcol, grow) in warnings:
-                fn = 'static/%s/%s_%02d_%02d.png' % (img_name, img_name, gcol, grow)
-                im = Image.open(fn)
-                images[(gcol, grow)] = im
-
-            # Mask
-            #print images.keys()
-            #print warnings_field.keys()
-            for (gcol, grow), field in warnings_field.iteritems():
-                im = images[(gcol, grow)]
-                d = ImageDraw.Draw(im)
-                for frow in xrange(8):
-                    for fcol in xrange(8):
-                        c = field[frow * 8 + fcol]
-                        if c not in '01':
-                            roi = im_roi(fcol, frow)
-                            d.rectangle(roi, fill=None, outline=(0xFF, 0xFF, 0))
-
-            # Save
-            for (gcol, grow), im in images.iteritems():
-                im.save(os.path.join(out_dir, '%02d_%02d_m.png' % (gcol, grow)))
-        gen_images()
+        gen_warning_images(out_dir, img_name)
 
         raise Exception("Resolve warnings before continuing")
 
-    print 'Assembling'
-    romb = layout_bin2img(rom)
-
-    print 'Writing'
     if not fn_out:
-        fn_out = '%s_cs.bin' % img_name
-    open(fn_out, 'w').write(romb)
+        fn_out = '%s_cs.txt' % img_name
+    print 'Writing %s' % fn_out
+    save_txt(rom, open(fn_out, 'w'))
+
+    if meta_dir:
+        json.dump(meta, open(os.path.join(meta_dir, 'meta.json'), 'w'),
+                  sort_keys=True, indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract ROM .bin from monkey DB')
     parser.add_argument('--verbose', '-v', action='store_true', help='verbose')
     parser.add_argument('--cf', '-c', help='Correction file')
+    parser.add_argument('--meta', '-m', help='Output CV metadata training file to given directory')
     parser.add_argument('image', help='Image file to process (ex: sega_315-5571_xpol)')
     parser.add_argument('fn_out', nargs='?', default=None, help='Output file name')
     args = parser.parse_args()
 
-    feedback = None
+    overrides = None
     if args.cf:
-        feedback = ast.literal_eval(open(args.cf, 'r').read())
-    run(img_name=args.image, feedback=feedback, fn_out=args.fn_out)
-
+        overrides = ast.literal_eval(open(args.cf, 'r').read())
+    run(img_name=args.image, overrides=overrides, fn_out=args.fn_out, meta_dir=args.meta)

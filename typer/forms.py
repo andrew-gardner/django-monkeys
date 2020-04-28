@@ -15,7 +15,8 @@ class MonkeyTyperForm(forms.ModelForm):
         """
         super(MonkeyTyperForm, self).__init__(*args, **kwargs)
         self.fields['typedField'].widget = forms.Textarea(attrs={'cols': self.instance.dieImage.bitWidth+2,
-                                                                 'rows': self.instance.dieImage.bitHeight+2})
+                                                                 'rows': self.instance.dieImage.bitHeight+2,
+                                                                 'style': 'font-family:monospace;'})
 
     class Meta:
         model = TypedDie

@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.models import User
-from django.contrib.staticfiles.templatetags import staticfiles
+from django.templatetags.static import static
 from .models import Die, DieImage, TypedDie
 from .forms import MonkeyTyperForm
 
@@ -220,7 +220,7 @@ def dieInstructionsView(request, dieName):
             imageWidth = int(splitData[1])
             imageHeight = int(splitData[2])
         imageObject = dieObject.instructionsimage_set.filter(Q(name=imageName))
-        imageUrl = staticfiles.static(imageObject[0].image.url)
+        imageUrl = static(imageObject[0].image.url)
         if len(splitData) > 1:
             refText = """<img src="%s" width=%d height=%d>""" % (imageUrl, imageWidth, imageHeight)
         else:

@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_registration',
-    'typer.apps.TyperConfig'
+    'typer'
 ]
 
 MIDDLEWARE = [

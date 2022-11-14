@@ -1,13 +1,13 @@
-from django.urls import re_path
+from django.urls import path
 
 from .views import indexView, dieInstructionsView, adminSummaryHomeView, adminSummaryView, dieSpecificUserStatisticsView, adminStatisticsView
 
 app_name = 'typer'
 urlpatterns = [
-    re_path(r'^(?P<dieName>[a-zA-Z0-9-_]+)/$', indexView, name='index'),
-    re_path(r'^(?P<dieName>[a-zA-Z0-9-_]+)/statistics/(?P<userName>[a-zA-Z0-9\._@\-]+)/$', dieSpecificUserStatisticsView, name='dieSpecificUserStatistics'),
-    re_path(r'^(?P<dieName>[a-zA-Z0-9-_]+)/instructions/$', dieInstructionsView, name='dieInstructions'),
-    re_path(r'^(?P<dieName>[a-zA-Z0-9-_]+)/adminStatistics/$', adminStatisticsView, name='adminStatistics'),
-    re_path(r'^(?P<dieName>[a-zA-Z0-9-_]+)/adminSummary/$', adminSummaryHomeView, name='adminSummaryHome'),
-    re_path(r'^(?P<dieName>[a-zA-Z0-9-_]+)/adminSummary/(?P<imageId>[0-9]+)/$', adminSummaryView, name='adminSummaryView'),
+    path('<str:dieName>/', indexView, name='index'),
+    path('<str:dieName>/statistics/<str:userName>/', dieSpecificUserStatisticsView, name='dieSpecificUserStatistics'),
+    path('<str:dieName>/instructions/', dieInstructionsView, name='dieInstructions'),
+    path('<str:dieName>/adminStatistics/', adminStatisticsView, name='adminStatistics'),
+    path('<str:dieName>/adminSummary/', adminSummaryHomeView, name='adminSummaryHome'),
+    path('<str:dieName>/adminSummary/<int:imageId>/', adminSummaryView, name='adminSummaryView'),
 ]

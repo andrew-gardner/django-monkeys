@@ -58,7 +58,7 @@ class TypedDie(models.Model):
     References back to the Die Image it's associated with.
     """
     dieImage = models.ForeignKey(DieImage, on_delete=models.CASCADE)
-    submitter = models.ForeignKey('auth.User', null=True, blank=True)
+    submitter = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.DO_NOTHING)
     typedField = models.TextField('Typed Info', blank=True)
     submitDate = models.DateTimeField('Time Submitted', null=True, blank=True)
 
